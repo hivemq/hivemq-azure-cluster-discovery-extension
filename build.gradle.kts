@@ -109,6 +109,5 @@ tasks.check { dependsOn(integrationTest) }
 
 license {
     header = rootDir.resolve("HEADER")
-    exclude("**/resources/**")
     mapping("java", "SLASHSTAR_STYLE")
 }
