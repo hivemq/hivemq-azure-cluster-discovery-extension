@@ -52,6 +52,7 @@ dependencies {
 dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:${property("junit.version")}")
     testImplementation("org.mockito:mockito-inline:${property("mockito.version")}")
+    testImplementation("org.awaitility:awaitility:${property("awaitlity.version")}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
 }
 

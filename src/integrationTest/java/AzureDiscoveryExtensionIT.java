@@ -37,12 +37,12 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class AzureDiscoveryExtensionIT {
@@ -61,11 +61,13 @@ public class AzureDiscoveryExtensionIT {
     @BeforeEach
     void setUp() {
         azureriteContainer =
-                new GenericContainer<>(AZURITE_IMAGE_NAME).withExposedPorts(AZURITE_EXPOSED_PORT).withNetwork(network);
+                new GenericContainer<>(AZURITE_IMAGE_NAME)
+                        .withExposedPorts(AZURITE_EXPOSED_PORT)
+                        .withNetwork(network);
         azureriteContainer.start();
         azureritePort = azureriteContainer.getMappedPort(10000);
         azureriteDockerConnectionString =
-                "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://host.docker.internal:" +
+                "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://172.17.0.1:" +
                         azureritePort + "/devstoreaccount1";
         azureriteUserConnectionString =
                 "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://127.0.0.1:" +
@@ -85,11 +87,9 @@ public class AzureDiscoveryExtensionIT {
         node2.start();
         node3.start();
 
-        consumer1.waitUntil(frame -> frame.getUtf8String().contains("Cluster size = 3"), 30, TimeUnit.SECONDS);
-
-        consumer2.waitUntil(frame -> frame.getUtf8String().contains("Cluster size = 3"), 30, TimeUnit.SECONDS);
-
-        consumer3.waitUntil(frame -> frame.getUtf8String().contains("Cluster size = 3"), 30, TimeUnit.SECONDS);
+        consumer1.waitUntil(frame -> frame.getUtf8String().contains("Cluster size = 3"), 30, SECONDS);
+        consumer2.waitUntil(frame -> frame.getUtf8String().contains("Cluster size = 3"), 30, SECONDS);
+        consumer3.waitUntil(frame -> frame.getUtf8String().contains("Cluster size = 3"), 30, SECONDS);
     }
 
     @Test
@@ -104,18 +104,17 @@ public class AzureDiscoveryExtensionIT {
         node1.start();
         node2.start();
 
-        consumer1.waitUntil(frame -> frame.getUtf8String().contains("Cluster size = 2"), 30, TimeUnit.SECONDS);
-
-        consumer2.waitUntil(frame -> frame.getUtf8String().contains("Cluster size = 2"), 30, TimeUnit.SECONDS);
+        consumer1.waitUntil(frame -> frame.getUtf8String().contains("Cluster size = 2"), 30, SECONDS);
+        consumer2.waitUntil(frame -> frame.getUtf8String().contains("Cluster size = 2"), 30, SECONDS);
 
         node3.start();
 
-        consumer3.waitUntil(frame -> frame.getUtf8String().contains("Cluster size = 3"), 300, TimeUnit.SECONDS);
+        consumer3.waitUntil(frame -> frame.getUtf8String().contains("Cluster size = 3"), 300, SECONDS);
     }
 
     @Test
     public void twoNodesInCluster_OneNodeCannotReachAzure_nodeFileDeleted()
-            throws IOException, TimeoutException, InterruptedException {
+            throws IOException, TimeoutException {
 
         final ToxiproxyContainer toxiproxy = new ToxiproxyContainer(TOXIPROXY_IMAGE).withNetwork(network)
                 .withNetworkAliases(TOXIPROXY_NETWORK_ALIAS);
@@ -123,7 +122,7 @@ public class AzureDiscoveryExtensionIT {
 
         final ToxiproxyContainer.ContainerProxy proxy = toxiproxy.getProxy(azureriteContainer, 10000);
         final String toxiProxyConnectionString =
-                "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://host.docker.internal:" +
+                "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://172.17.0.1:" +
                         proxy.getProxyPort() + "/devstoreaccount1";
 
         final WaitingConsumer toxicConsumer = new WaitingConsumer();
@@ -135,20 +134,18 @@ public class AzureDiscoveryExtensionIT {
         toxicNode.start();
         normalNode.start();
 
-        toxicConsumer.waitUntil(frame -> frame.getUtf8String().contains("Cluster size = 2"), 30, TimeUnit.SECONDS);
-
-        normalConsumer.waitUntil(frame -> frame.getUtf8String().contains("Cluster size = 2"), 30, TimeUnit.SECONDS);
+        toxicConsumer.waitUntil(frame -> frame.getUtf8String().contains("Cluster size = 2"), 30, SECONDS);
+        normalConsumer.waitUntil(frame -> frame.getUtf8String().contains("Cluster size = 2"), 30, SECONDS);
 
         proxy.setConnectionCut(true); // toxicNode now cannot update its node file
-        Thread.sleep(15000);
 
         final BlobServiceClient blobServiceClient =
                 new BlobServiceClientBuilder().connectionString(azureriteUserConnectionString).buildClient();
         final BlobContainerClient blobContainerClient = blobServiceClient.getBlobContainerClient("hivemq-discovery");
 
-        final List<BlobItem> blobs = blobContainerClient.listBlobs().stream().collect(Collectors.toList());
+        await().pollInterval(1, SECONDS).atMost(60, SECONDS).until( () -> blobContainerClient.listBlobs().stream().collect(Collectors.toList()).size() == 1);
 
-        assertEquals(1, blobs.size());
+
     }
 
     @Test
@@ -164,17 +161,14 @@ public class AzureDiscoveryExtensionIT {
         node2.start();
         node3.start();
 
-        consumer1.waitUntil(frame -> frame.getUtf8String().contains("Cluster size = 3"), 30, TimeUnit.SECONDS);
-
-        consumer2.waitUntil(frame -> frame.getUtf8String().contains("Cluster size = 3"), 30, TimeUnit.SECONDS);
-
-        consumer3.waitUntil(frame -> frame.getUtf8String().contains("Cluster size = 3"), 30, TimeUnit.SECONDS);
+        consumer1.waitUntil(frame -> frame.getUtf8String().contains("Cluster size = 3"), 30, SECONDS);
+        consumer2.waitUntil(frame -> frame.getUtf8String().contains("Cluster size = 3"), 30, SECONDS);
+        consumer3.waitUntil(frame -> frame.getUtf8String().contains("Cluster size = 3"), 30, SECONDS);
 
         node3.stop();
 
-        consumer1.waitUntil(frame -> frame.getUtf8String().contains("Cluster size = 2"), 30, TimeUnit.SECONDS, 2);
-
-        consumer2.waitUntil(frame -> frame.getUtf8String().contains("Cluster size = 2"), 30, TimeUnit.SECONDS, 2);
+        consumer1.waitUntil(frame -> frame.getUtf8String().contains("Cluster size = 2"), 30, SECONDS, 2);
+        consumer2.waitUntil(frame -> frame.getUtf8String().contains("Cluster size = 2"), 30, SECONDS, 2);
 
 
         final BlobServiceClient blobServiceClient =
@@ -192,7 +186,7 @@ public class AzureDiscoveryExtensionIT {
         WaitingConsumer consumer = new WaitingConsumer();
 
         final String wrongConnectionString =
-                "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=XXX8vdM02xNOcqfinal String wrongConnectionString = \"DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=XXX8vdM02xNOcqFlFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://host.docker.internal:" +
+                "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=XXX8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://172.17.0.1:" +
                         azureritePort + "/devstoreaccount1";
         final HiveMQTestContainerExtension reloadingNode =
                 createHiveMQNode(wrongConnectionString).withLogConsumer(consumer);
@@ -212,7 +206,7 @@ public class AzureDiscoveryExtensionIT {
         reloadingNode.execInContainer("echo '" + replacedConfig +
                 "' > /opt/hivemq/extensions/hivemq-azure-cluster-discovery-extension/azDiscovery.properties");
 
-        consumer.waitUntil(frame -> frame.getUtf8String().contains("Cluster size = 2"), 300, TimeUnit.SECONDS);
+        consumer.waitUntil(frame -> frame.getUtf8String().contains("Cluster size = 2"), 300, SECONDS);
     }
 
     @Test
@@ -261,9 +255,10 @@ public class AzureDiscoveryExtensionIT {
         final String extensionConfigPath = "src/integrationTest/resources/azDiscovery.properties";
         final String replacedConfig = Files.readString(Path.of(extensionConfigPath))
                 .replace("connection-string=", "connection-string=" + connectionString);
-        Files.writeString(extensionDir.resolve("azDiscovery.properties"), replacedConfig, StandardOpenOption.CREATE);
+        Files.writeString(extensionDir.resolve("azDiscovery.properties"), replacedConfig);
 
-        return new HiveMQTestContainerExtension("hivemq/hivemq4", "latest").withExtension(extensionDir.toFile())
+        return new HiveMQTestContainerExtension("hivemq/hivemq4", "latest")
+                .withExtension(extensionDir.toFile())
                 .withHiveMQConfig(new File("src/integrationTest/resources/config.xml"))
                 .withNetwork(network)
                 .waitingFor(Wait.forLogMessage(".*Started HiveMQ in.*\\n", 1));
