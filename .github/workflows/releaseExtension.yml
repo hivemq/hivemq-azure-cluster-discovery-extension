@@ -43,5 +43,5 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./build/hivemq-extension/hivemq-azure-cluster-discovery-extension-${{ github.event.inputs.version }}.zip
-          asset_name: poc-hivemq-azure-storage-extension-${{ github.event.inputs.version }}.zip
+          asset_name: hivemq-azure-cluster-discovery-extension-${{ github.event.inputs.version }}.zip
           asset_content_type: application/zip
