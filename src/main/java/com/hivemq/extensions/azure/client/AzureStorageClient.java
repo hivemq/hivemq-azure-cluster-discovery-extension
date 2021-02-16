@@ -27,14 +27,13 @@ import com.azure.storage.blob.models.ListBlobsOptions;
 import com.hivemq.extension.sdk.api.annotations.NotNull;
 import com.hivemq.extension.sdk.api.annotations.Nullable;
 import com.hivemq.extensions.azure.config.ConfigReader;
-import com.hivemq.extensions.azure.config.StorageConfig;
+import com.hivemq.extensions.azure.config.AzureDiscoveryConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.io.UncheckedIOException;
 import java.util.Iterator;
 
 /**
@@ -44,24 +43,24 @@ public class AzureStorageClient {
 
     private static final Logger log = LoggerFactory.getLogger(AzureStorageClient.class);
 
-    public @NotNull ConfigReader configReader;
-    public BlobContainerClient containerClient;
-    public StorageConfig storageConfig;
+    private @NotNull ConfigReader configReader;
+    private @Nullable BlobContainerClient containerClient;
+    private @Nullable AzureDiscoveryConfig azureDiscoveryConfig;
 
     public AzureStorageClient(final @NotNull ConfigReader configReader) {
         this.configReader = configReader;
     }
 
-    public void createOrUpdate() {
+    public void createOrUpdate() throws IllegalStateException, IllegalArgumentException{
 
-        final StorageConfig newStorageConfig = configReader.readConfiguration();
-        if (newStorageConfig == null) {
+        final AzureDiscoveryConfig newAzureDiscoveryConfig = configReader.readConfiguration();
+        if (newAzureDiscoveryConfig == null) {
             throw new IllegalStateException("Configuration of the Azure Cluster Discovery Extension couldn't be loaded.");
         }
-        storageConfig = newStorageConfig;
+        azureDiscoveryConfig = newAzureDiscoveryConfig;
 
-        final String connectionString = storageConfig.getConnectionString();
-        final String containerName = storageConfig.getContainerName();
+        final String connectionString = azureDiscoveryConfig.getConnectionString();
+        final String containerName = azureDiscoveryConfig.getContainerName();
 
         // Create a BlobServiceClient object which will be used to retrieve the blob container with the HiveMQ node entries
         final BlobServiceClient blobServiceClient =
@@ -71,11 +70,15 @@ public class AzureStorageClient {
         containerClient = blobServiceClient.getBlobContainerClient(containerName);
     }
 
-    public boolean existsContainer() {
-        return containerClient.exists();
+    public boolean existsContainer() throws RuntimeException {
+        try {
+            return containerClient.exists();
+        } catch (final BlobStorageException blobStorageException) {
+          throw new RuntimeException("Azure Storage Container existence check failed with status code " + blobStorageException.getStatusCode() + " and error code " + blobStorageException.getErrorCode());
+        }
     }
 
-    public void createContainer() throws BlobStorageException {
+    public void createContainer() throws RuntimeException {
         try {
             containerClient.create();
             log.trace(
@@ -88,7 +91,7 @@ public class AzureStorageClient {
                         "Cannot create container {} in Azure Storage Account because the container already exists.",
                         containerClient.getBlobContainerName());
             } else {
-                throw error;
+                throw new RuntimeException("Azure Storage Container creation failed with status code " + error.getStatusCode() + " and error code " + error.getErrorCode());
             }
         }
     }
@@ -97,29 +100,52 @@ public class AzureStorageClient {
         final BlobClient blobClient = containerClient.getBlobClient(blobName);
         final InputStream blobData = new ByteArrayInputStream(content.getBytes());
 
-        blobClient.upload(blobData, content.length(), true);
+        try {
+            blobClient.upload(blobData, content.length(), true);
+        } catch (final BlobStorageException blobStorageException) {
+            throw new RuntimeException("Azure Storage Blob upload failed with status code " + blobStorageException.getStatusCode() + " and error code " + blobStorageException.getErrorCode());
+        }
     }
 
     public void deleteBlob(final @NotNull String blobName) throws RuntimeException {
         final BlobClient blob = containerClient.getBlobClient(blobName);
-        blob.delete();
+
+        try {
+            blob.delete();
+        } catch (final BlobStorageException blobStorageException) {
+            throw new RuntimeException("Azure Storage Blob delete failed with status code " + blobStorageException.getStatusCode() + " and error code " + blobStorageException.getErrorCode());
+        }
     }
 
     @NotNull
-    public String getBlobContent(final @NotNull String blobName) throws UncheckedIOException {
+    public String getBlobContent(final @NotNull String blobName) throws RuntimeException {
         final BlobClient blobClient = containerClient.getBlobClient(blobName);
         final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
-        blobClient.download(outputStream);
+        try {
+            blobClient.download(outputStream);
+        } catch (final BlobStorageException blobStorageException) {
+            throw new RuntimeException("Azure Storage Blob download failed with status code " + blobStorageException.getStatusCode() + " and error code " + blobStorageException.getErrorCode());
+        }
 
         return outputStream.toString();
     }
 
     @NotNull
     public Iterator<BlobItem> getBlobs(final @NotNull String filePrefix) throws RuntimeException {
-        return containerClient.listBlobs(new ListBlobsOptions().setPrefix(filePrefix), null).iterator();
+
+        try {
+            return containerClient.listBlobs(new ListBlobsOptions().setPrefix(filePrefix), null).iterator();
+        } catch (final BlobStorageException blobStorageException) {
+            throw new RuntimeException("Azure Storage Blobs retrieval failed with status code " + blobStorageException.getStatusCode() + " and error code " + blobStorageException.getErrorCode());
+        }
     }
 
-    @Nullable
-    public StorageConfig getStorageConfig() { return storageConfig; }
+    public @Nullable AzureDiscoveryConfig getStorageConfig() { return azureDiscoveryConfig; }
+
+    public @Nullable ConfigReader getConfigReader() { return configReader; }
+
+    public @Nullable BlobContainerClient getContainerClient() { return containerClient; }
+
+    void setContainerClient(final @NotNull BlobContainerClient containerClient) { this.containerClient = containerClient; }
 }

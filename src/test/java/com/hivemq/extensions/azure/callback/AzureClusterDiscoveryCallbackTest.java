@@ -25,7 +25,7 @@ import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryO
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterNodeAddress;
 import com.hivemq.extensions.azure.config.ClusterNodeFileTest;
 import com.hivemq.extensions.azure.config.ConfigReader;
-import com.hivemq.extensions.azure.config.StorageConfig;
+import com.hivemq.extensions.azure.config.AzureDiscoveryConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -63,9 +63,9 @@ public class AzureClusterDiscoveryCallbackTest {
     @Mock
     public ClusterDiscoveryOutput clusterDiscoveryOutput;
 
-    private AzureClusterDiscoveryCallback azStorageDiscoveryCallback;
+    private AzureClusterDiscoveryCallback azureClusterDiscoveryCallback;
     private ConfigReader configurationReader;
-    private StorageConfig azStorageConfig;
+    private AzureDiscoveryConfig azAzureDiscoveryConfig;
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -85,15 +85,15 @@ public class AzureClusterDiscoveryCallbackTest {
         }
 
         configurationReader = new ConfigReader(extensionInformation);
-        azStorageDiscoveryCallback = new AzureClusterDiscoveryCallback(configurationReader);
-        azStorageClient.configReader = configurationReader;
-        azStorageDiscoveryCallback.azureStorageClient = azStorageClient;
+        azureClusterDiscoveryCallback = new AzureClusterDiscoveryCallback(configurationReader);
+        when(azStorageClient.getConfigReader()).thenReturn(configurationReader);
+        azureClusterDiscoveryCallback.setAzureStorageClient(azStorageClient);
 
-        azStorageClient.configReader.readConfiguration();
-        azStorageClient.containerClient = blobContainerClient;
+        azStorageClient.getConfigReader().readConfiguration();
+        when(azStorageClient.getContainerClient()).thenReturn(blobContainerClient);
 
-        azStorageConfig = configurationReader.readConfiguration();
-        when(azStorageClient.getStorageConfig()).thenReturn(azStorageConfig);
+        azAzureDiscoveryConfig = configurationReader.readConfiguration();
+        when(azStorageClient.getStorageConfig()).thenReturn(azAzureDiscoveryConfig);
         when(azStorageClient.existsContainer()).thenReturn(true);
     }
 
@@ -107,7 +107,7 @@ public class AzureClusterDiscoveryCallbackTest {
                 "3",
                 "3"));
 
-        azStorageDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
+        azureClusterDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(azStorageClient).createOrUpdate();
         verify(azStorageClient).existsContainer();
@@ -119,7 +119,7 @@ public class AzureClusterDiscoveryCallbackTest {
     public void test_init_provide_current_nodes_exception_getting_node_files() {
         doThrow(RuntimeException.class).when(azStorageClient).getBlobs(any());
 
-        azStorageDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
+        azureClusterDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(azStorageClient).createOrUpdate();
         verify(azStorageClient).existsContainer();
@@ -132,7 +132,7 @@ public class AzureClusterDiscoveryCallbackTest {
         when(azStorageClient.getBlobs(any())).thenReturn(createBlobItemIterator());
         doThrow(UncheckedIOException.class).when(azStorageClient).getBlobContent(any());
 
-        azStorageDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
+        azureClusterDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(azStorageClient).createOrUpdate();
         verify(azStorageClient).existsContainer();
@@ -145,7 +145,7 @@ public class AzureClusterDiscoveryCallbackTest {
         when(azStorageClient.getBlobs(any())).thenReturn(createBlobItemIterator());
         doThrow(UncheckedIOException.class).when(azStorageClient).getBlobContent(any());
 
-        azStorageDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
+        azureClusterDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(azStorageClient).createOrUpdate();
         verify(azStorageClient).existsContainer();
@@ -157,7 +157,7 @@ public class AzureClusterDiscoveryCallbackTest {
     public void test_init_provide_current_nodes_empty_blob_item_iterator() {
         when(azStorageClient.getBlobs(any())).thenReturn(createEmptyBlobItemIterator());
 
-        azStorageDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
+        azureClusterDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(azStorageClient).createOrUpdate();
         verify(azStorageClient).existsContainer();
@@ -176,8 +176,8 @@ public class AzureClusterDiscoveryCallbackTest {
             printWriter.println("file-expiration:2");
             printWriter.println("update-interval:1");
         }
-        final StorageConfig storageConfig = new ConfigReader(extensionInformation).readConfiguration();
-        when(azStorageClient.getStorageConfig()).thenReturn(storageConfig);
+        final AzureDiscoveryConfig azureDiscoveryConfig = new ConfigReader(extensionInformation).readConfiguration();
+        when(azStorageClient.getStorageConfig()).thenReturn(azureDiscoveryConfig);
 
         when(azStorageClient.getBlobs(any())).thenReturn(createBlobItemIterator());
         when(azStorageClient.getBlobContent(any())).thenReturn(ClusterNodeFileTest.createClusterNodeFileString(
@@ -190,7 +190,7 @@ public class AzureClusterDiscoveryCallbackTest {
         // Wait for files to expire
         TimeUnit.SECONDS.sleep(2);
 
-        azStorageDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
+        azureClusterDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(azStorageClient).createOrUpdate();
         verify(azStorageClient).existsContainer();
@@ -203,7 +203,7 @@ public class AzureClusterDiscoveryCallbackTest {
         when(azStorageClient.getBlobs(any())).thenReturn(createBlobItemIterator());
         when(azStorageClient.getBlobContent(any())).thenReturn(null);
 
-        azStorageDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
+        azureClusterDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(azStorageClient).createOrUpdate();
         verify(azStorageClient).existsContainer();
@@ -216,7 +216,7 @@ public class AzureClusterDiscoveryCallbackTest {
         when(azStorageClient.getBlobs(any())).thenReturn(createBlobItemIterator());
         when(azStorageClient.getBlobContent(any())).thenReturn(" ");
 
-        azStorageDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
+        azureClusterDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(azStorageClient).createOrUpdate();
         verify(azStorageClient).existsContainer();
@@ -234,7 +234,7 @@ public class AzureClusterDiscoveryCallbackTest {
                 "3",
                 "3"));
 
-        azStorageDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
+        azureClusterDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(azStorageClient).createOrUpdate();
         verify(azStorageClient).existsContainer();
@@ -246,7 +246,7 @@ public class AzureClusterDiscoveryCallbackTest {
     public void test_init_save_own_file_failed() {
         doThrow(RuntimeException.class).when(azStorageClient).saveBlob(any(), any());
 
-        azStorageDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
+        azureClusterDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(azStorageClient).createOrUpdate();
         verify(azStorageClient).existsContainer();
@@ -259,7 +259,7 @@ public class AzureClusterDiscoveryCallbackTest {
 
         when(azStorageClient.existsContainer()).thenReturn(false);
 
-        azStorageDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
+        azureClusterDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(azStorageClient).createOrUpdate();
         verify(azStorageClient).createContainer();
@@ -273,7 +273,7 @@ public class AzureClusterDiscoveryCallbackTest {
 
         doThrow(new IllegalStateException("Config is not valid.")).when(azStorageClient).createOrUpdate();
 
-        azStorageDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
+        azureClusterDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(azStorageClient, never()).existsContainer();
         verify(azStorageClient).createOrUpdate();
@@ -286,7 +286,7 @@ public class AzureClusterDiscoveryCallbackTest {
 
         when(azStorageClient.existsContainer()).thenReturn(false);
 
-        azStorageDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
+        azureClusterDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(azStorageClient).createOrUpdate();
         verify(azStorageClient).existsContainer();
@@ -307,11 +307,11 @@ public class AzureClusterDiscoveryCallbackTest {
             printWriter.println("file-expiration:360");
             printWriter.println("update-interval:180");
         }
-        final StorageConfig storageConfig = new ConfigReader(extensionInformation).readConfiguration();
-        when(azStorageClient.getStorageConfig()).thenReturn(storageConfig);
+        final AzureDiscoveryConfig azureDiscoveryConfig = new ConfigReader(extensionInformation).readConfiguration();
+        when(azStorageClient.getStorageConfig()).thenReturn(azureDiscoveryConfig);
         doThrow(IllegalStateException.class).when(azStorageClient).createOrUpdate();
 
-        azStorageDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
+        azureClusterDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(azStorageClient, never()).existsContainer();
         verify(clusterDiscoveryOutput, never()).provideCurrentNodes(anyList());
@@ -321,8 +321,8 @@ public class AzureClusterDiscoveryCallbackTest {
     public void test_init_no_config() {
         temporaryFolder.delete();
 
-        azStorageDiscoveryCallback = new AzureClusterDiscoveryCallback(configurationReader);
-        azStorageDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
+        azureClusterDiscoveryCallback = new AzureClusterDiscoveryCallback(configurationReader);
+        azureClusterDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(clusterDiscoveryOutput, never()).provideCurrentNodes(anyList());
     }
@@ -330,15 +330,15 @@ public class AzureClusterDiscoveryCallbackTest {
     @Test
     public void test_reload_success_same_config() {
 
-        azStorageDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
-        azStorageDiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
+        azureClusterDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
+        azureClusterDiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(clusterDiscoveryOutput, times(2)).provideCurrentNodes(anyList());
     }
 
     @Test
     public void test_reload_success_new_config() throws Exception {
-        azStorageDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
+        azureClusterDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         deleteFilesInTemporaryFolder();
 
@@ -349,10 +349,10 @@ public class AzureClusterDiscoveryCallbackTest {
             printWriter.println("file-expiration:120");
             printWriter.println("update-interval:60");
         }
-        final StorageConfig storageConfig = new ConfigReader(extensionInformation).readConfiguration();
-        when(azStorageClient.getStorageConfig()).thenReturn(storageConfig);
+        final AzureDiscoveryConfig azureDiscoveryConfig = new ConfigReader(extensionInformation).readConfiguration();
+        when(azStorageClient.getStorageConfig()).thenReturn(azureDiscoveryConfig);
 
-        azStorageDiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
+        azureClusterDiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(clusterDiscoveryOutput, times(2)).provideCurrentNodes(anyList());
     }
@@ -360,7 +360,7 @@ public class AzureClusterDiscoveryCallbackTest {
     @Test
     public void test_reload_new_config_missing_container_is_created() throws Exception {
         temporaryFolder.delete();
-        azStorageDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
+        azureClusterDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
         deleteFilesInTemporaryFolder();
 
         try (final PrintWriter printWriter = new PrintWriter(new File(temporaryFolder, ConfigReader.STORAGE_FILE))) {
@@ -370,22 +370,22 @@ public class AzureClusterDiscoveryCallbackTest {
             printWriter.println("file-expiration:120");
             printWriter.println("update-interval:60");
         }
-        final StorageConfig storageConfig = new ConfigReader(extensionInformation).readConfiguration();
-        when(azStorageClient.getStorageConfig()).thenReturn(storageConfig);
+        final AzureDiscoveryConfig azureDiscoveryConfig = new ConfigReader(extensionInformation).readConfiguration();
+        when(azStorageClient.getStorageConfig()).thenReturn(azureDiscoveryConfig);
         when(azStorageClient.existsContainer()).thenReturn(false);
 
-        azStorageDiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
+        azureClusterDiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(clusterDiscoveryOutput, times(2)).provideCurrentNodes(anyList());
     }
 
     @Test
     public void test_reload_config_missing_init_success() {
-        azStorageDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
+        azureClusterDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         deleteFilesInTemporaryFolder();
 
-        azStorageDiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
+        azureClusterDiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(clusterDiscoveryOutput, times(2)).provideCurrentNodes(anyList());
     }
@@ -396,7 +396,7 @@ public class AzureClusterDiscoveryCallbackTest {
         when(azStorageClient.getStorageConfig()).thenReturn(null);
         doThrow(IllegalStateException.class).when(azStorageClient).createOrUpdate();
 
-        azStorageDiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
+        azureClusterDiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(clusterDiscoveryOutput, never()).provideCurrentNodes(anyList());
     }
@@ -412,15 +412,15 @@ public class AzureClusterDiscoveryCallbackTest {
             printWriter.println("file-expiration:5");
             printWriter.println("update-interval:1");
         }
-        final StorageConfig storageConfig = new ConfigReader(extensionInformation).readConfiguration();
-        when(azStorageClient.getStorageConfig()).thenReturn(storageConfig);
+        final AzureDiscoveryConfig azureDiscoveryConfig = new ConfigReader(extensionInformation).readConfiguration();
+        when(azStorageClient.getStorageConfig()).thenReturn(azureDiscoveryConfig);
 
-        azStorageDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
+        azureClusterDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         // Wait for file to expire
         TimeUnit.SECONDS.sleep(1);
 
-        azStorageDiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
+        azureClusterDiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(azStorageClient, times(2)).saveBlob(any(), any());
         verify(clusterDiscoveryOutput, times(2)).provideCurrentNodes(anyList());
@@ -437,16 +437,16 @@ public class AzureClusterDiscoveryCallbackTest {
             printWriter.println("file-expiration:5");
             printWriter.println("update-interval:1");
         }
-        final StorageConfig storageConfig = new ConfigReader(extensionInformation).readConfiguration();
-        when(azStorageClient.getStorageConfig()).thenReturn(storageConfig);
+        final AzureDiscoveryConfig azureDiscoveryConfig = new ConfigReader(extensionInformation).readConfiguration();
+        when(azStorageClient.getStorageConfig()).thenReturn(azureDiscoveryConfig);
 
-        azStorageDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
+        azureClusterDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         // Wait for file to expire
         TimeUnit.SECONDS.sleep(1);
         doThrow(RuntimeException.class).when(azStorageClient).saveBlob(any(), any());
 
-        azStorageDiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
+        azureClusterDiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(azStorageClient, times(2)).saveBlob(any(), any());
         verify(clusterDiscoveryOutput, times(1)).provideCurrentNodes(anyList());
@@ -454,23 +454,23 @@ public class AzureClusterDiscoveryCallbackTest {
 
     @Test
     public void test_destroy_success() {
-        azStorageDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
-        azStorageDiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
-        azStorageDiscoveryCallback.destroy(clusterDiscoveryInput);
+        azureClusterDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
+        azureClusterDiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
+        azureClusterDiscoveryCallback.destroy(clusterDiscoveryInput);
 
         verify(azStorageClient, times(1)).deleteBlob(any());
     }
 
     @Test
     public void test_destroy_no_own_file() {
-        azStorageDiscoveryCallback.destroy(clusterDiscoveryInput);
+        azureClusterDiscoveryCallback.destroy(clusterDiscoveryInput);
         verify(azStorageClient, never()).deleteBlob(any());
     }
 
     @Test
     public void test_destroy_delete_own_file_failed() {
-        azStorageDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
-        azStorageDiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
+        azureClusterDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
+        azureClusterDiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         when(azStorageClient.getBlobContent(any())).thenReturn(ClusterNodeFileTest.createClusterNodeFileString(
                 "3",
@@ -480,7 +480,7 @@ public class AzureClusterDiscoveryCallbackTest {
                 "3"));
 
         doThrow(RuntimeException.class).when(azStorageClient).deleteBlob(any());
-        azStorageDiscoveryCallback.destroy(clusterDiscoveryInput);
+        azureClusterDiscoveryCallback.destroy(clusterDiscoveryInput);
 
         verify(azStorageClient, times(1)).deleteBlob(any());
     }

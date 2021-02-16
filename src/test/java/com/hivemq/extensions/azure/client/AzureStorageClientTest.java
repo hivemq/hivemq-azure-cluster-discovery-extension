@@ -71,14 +71,14 @@ public class AzureStorageClientTest {
     public void test_create_successful() {
         azStorageClient.createOrUpdate();
         assertNotNull(azStorageClient.getStorageConfig());
-        assertNotNull(azStorageClient.containerClient);
+        assertNotNull(azStorageClient.getContainerClient());
     }
 
     @Test
     public void test_container_exists() {
         azStorageClient.createOrUpdate();
         final BlobContainerClient containerClient = Mockito.mock(BlobContainerClient.class);
-        azStorageClient.containerClient = containerClient;
+        azStorageClient.setContainerClient(containerClient);
 
         when(containerClient.exists()).thenReturn(true);
         final boolean containerExists = azStorageClient.existsContainer();
@@ -90,7 +90,7 @@ public class AzureStorageClientTest {
     public void test_container_does_not_exist() {
         azStorageClient.createOrUpdate();
         final BlobContainerClient containerClient = Mockito.mock(BlobContainerClient.class);
-        azStorageClient.containerClient = containerClient;
+        azStorageClient.setContainerClient(containerClient);
 
         when(containerClient.exists()).thenReturn(false);
         final boolean containerExists = azStorageClient.existsContainer();
@@ -131,7 +131,7 @@ public class AzureStorageClientTest {
         azStorageClient.createOrUpdate();
 
         final BlobContainerClient containerClient = Mockito.mock(BlobContainerClient.class);
-        azStorageClient.containerClient = containerClient;
+        azStorageClient.setContainerClient(containerClient);
 
         when(containerClient.getBlobClient(any())).thenReturn(blobClient);
 
@@ -146,7 +146,7 @@ public class AzureStorageClientTest {
         azStorageClient.createOrUpdate();
 
         final BlobContainerClient containerClient = Mockito.mock(BlobContainerClient.class);
-        azStorageClient.containerClient = containerClient;
+        azStorageClient.setContainerClient(containerClient);
 
         when(containerClient.getBlobClient(anyString())).thenReturn(blobClient);
         doAnswer(invocation -> {
@@ -166,7 +166,7 @@ public class AzureStorageClientTest {
         azStorageClient.createOrUpdate();
 
         final BlobContainerClient containerClient = Mockito.mock(BlobContainerClient.class);
-        azStorageClient.containerClient = containerClient;
+        azStorageClient.setContainerClient(containerClient);
 
         when(containerClient.getBlobClient(anyString())).thenReturn(blobClient);
 

@@ -37,8 +37,8 @@ public class AzureClusterDiscoveryExtensionMain implements ExtensionMain {
 
     @Override
     public void extensionStart(
-            @NotNull ExtensionStartInput extensionStartInput,
-            @NotNull ExtensionStartOutput extensionStartOutput) {
+            final @NotNull ExtensionStartInput extensionStartInput,
+            final @NotNull ExtensionStartOutput extensionStartOutput) {
 
         try {
             final ConfigReader configReader = new ConfigReader(extensionStartInput.getExtensionInformation());
@@ -48,8 +48,7 @@ public class AzureClusterDiscoveryExtensionMain implements ExtensionMain {
         } catch (final UnsupportedOperationException e) {
             extensionStartOutput.preventExtensionStartup(e.getMessage());
         } catch (final Exception e) {
-            logger.error("Not able to start Azure Cluster Discovery Extension.", e);
-            extensionStartOutput.preventExtensionStartup("Exception caught at extension start.");
+            extensionStartOutput.preventExtensionStartup("Unknown error while starting the extension" + ((e.getMessage() != null) ? ": " + e.getMessage() : ""));
         }
     }
 

@@ -35,14 +35,14 @@ public final class Preconditions {
 
     public static void checkNotNull(final @Nullable Object object, final @NotNull String name) {
         if (object == null) {
-            throw new NullPointerException(String.format("'%s' must not be null!", name));
+            throw new NullPointerException(String.format("'%s' must not be null.", name));
         }
     }
 
     public static void checkNotNullOrBlank(final @Nullable String value, final @NotNull String name) {
         checkNotNull(value, name);
         if (StringUtil.isNullOrBlank(value)) {
-            throw new IllegalArgumentException(String.format("'%s' must not be null or blank!", name));
+            throw new IllegalArgumentException(String.format("'%s' must not be null or blank.", name));
         }
     }
 }

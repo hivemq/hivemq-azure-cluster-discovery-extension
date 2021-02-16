@@ -197,7 +197,7 @@ public class AzureDiscoveryExtensionIT {
 
         final String extensionConfigPath = "src/integrationTest/resources/azDiscovery.properties";
         final String replacedConfig = Files.readString(Path.of(extensionConfigPath))
-                .replace("connection-string=", "connection-string=" + azureriteDockerConnectionString);
+                .replace("connection-string=<your-connection-string>", "connection-string=" + azureriteDockerConnectionString);
         reloadingNode.copyFileToContainer(
                 Transferable.of(replacedConfig.getBytes()),
                 "/opt/hivemq/extensions/hivemq-azure-cluster-discovery-extension/azDiscovery.properties");
@@ -254,7 +254,7 @@ public class AzureDiscoveryExtensionIT {
 
         final String extensionConfigPath = "src/integrationTest/resources/azDiscovery.properties";
         final String replacedConfig = Files.readString(Path.of(extensionConfigPath))
-                .replace("connection-string=", "connection-string=" + connectionString);
+                .replace("connection-string=<your-connection-string>", "connection-string=" + connectionString);
         Files.writeString(extensionDir.resolve("azDiscovery.properties"), replacedConfig);
 
         return new HiveMQTestContainerExtension("hivemq/hivemq4", "latest")

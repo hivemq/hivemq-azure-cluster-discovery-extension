@@ -38,7 +38,7 @@ public class ConfigReader {
         extensionHomeFolder = extensionInformation.getExtensionHomeFolder();
     }
 
-    public @Nullable StorageConfig readConfiguration() {
+    public @Nullable AzureDiscoveryConfig readConfiguration() {
 
         final File propertiesFile = new File(extensionHomeFolder, STORAGE_FILE);
 
@@ -63,84 +63,81 @@ public class ConfigReader {
             final Properties properties = new Properties();
             properties.load(inputStream);
 
-            final StorageConfig storageConfig = ConfigFactory.create(StorageConfig.class, properties);
-            if (!isValid(storageConfig)) {
-                logger.error("Configuration of the Azure Storage Cluster Discovery Extension is not valid!");
+            final AzureDiscoveryConfig
+                    azureDiscoveryConfig = ConfigFactory.create(AzureDiscoveryConfig.class, properties);
+            if (!isValid(azureDiscoveryConfig)) {
+                logger.error("The Configuration of the Azure Storage Cluster Discovery Extension is not valid. The extension cannot be started.");
                 return null;
             }
             logger.trace("Read properties file '{}' successfully.", propertiesFile.getAbsolutePath());
-            return storageConfig;
+            return azureDiscoveryConfig;
 
         } catch (final FileNotFoundException e) {
             logger.error("Could not find the properties file '{}'", propertiesFile.getAbsolutePath());
         } catch (final IOException e) {
-            logger.error("An error occurred while reading the properties file {}", propertiesFile.getAbsolutePath(), e);
+            logger.error("An error occurred while reading the properties file {}. {}", propertiesFile.getAbsolutePath(), e.getMessage());
         }
 
         return null;
     }
 
-    private static boolean isValid(final @NotNull StorageConfig storageConfig) {
+    private static boolean isValid(final @NotNull AzureDiscoveryConfig azureDiscoveryConfig) {
 
-        final String connectionString = storageConfig.getConnectionString();
+        final String connectionString = azureDiscoveryConfig.getConnectionString();
         if (isNullOrBlank(connectionString)) {
-            logger.error("Azure Storage Cluster Discovery Extension - Connection String is empty!");
+            logger.error("The Connection String of the configuration file was empty. The extension cannot be started.");
             return false;
         }
 
-        final String containerName = storageConfig.getContainerName();
+        final String containerName = azureDiscoveryConfig.getContainerName();
         if (isNullOrBlank(containerName)) {
-            logger.error("Azure Storage Cluster Discovery Extension - Container Name is empty!");
+            logger.error("The Container Name of the configuration file was empty. The extension cannot be started.");
             return false;
         }
 
         final long fileExpirationInSeconds;
         try {
-            fileExpirationInSeconds = storageConfig.getFileExpirationInSeconds();
+            fileExpirationInSeconds = azureDiscoveryConfig.getFileExpirationInSeconds();
         } catch (final UnsupportedOperationException e) {
-            logger.error("Azure Storage Cluster Discovery Extension- File expiration interval is not set!");
+            logger.error("The File Expiration Interval of the configuration file was empty. The extension cannot be started.");
             return false;
         }
         if (fileExpirationInSeconds < 0) {
-            logger.error("Azure Storage Cluster Discovery Extension - File expiration interval is negative!");
+            logger.error("The File Expiration Interval of the configuration file was negative. The extension cannot be started.");
             return false;
         }
 
         final long fileUpdateIntervalInSeconds;
         try {
-            fileUpdateIntervalInSeconds = storageConfig.getFileUpdateIntervalInSeconds();
+            fileUpdateIntervalInSeconds = azureDiscoveryConfig.getFileUpdateIntervalInSeconds();
         } catch (final UnsupportedOperationException e) {
-            logger.error("Azure Storage Cluster Discovery Extension - File update interval is not set!");
+            logger.error("The File Update Interval of the configuration file was empty. The extension cannot be started.");
             return false;
         }
         if (fileUpdateIntervalInSeconds < 0) {
-            logger.error("Azure Storage Cluster Discovery Extension - File update interval is negative!");
+            logger.error("The File Update Interval of the configuration file was negative. The extension cannot be started.");
             return false;
         }
 
         if (!(fileUpdateIntervalInSeconds == 0 && fileExpirationInSeconds == 0)) {
 
             if (fileUpdateIntervalInSeconds == fileExpirationInSeconds) {
-                logger.error(
-                        "Azure Storage Cluster Discovery Extension - File update interval is the same as the expiration interval!");
+                logger.error("The File Update Interval is the same as the File Expiration Interval. The extension cannot be started.");
                 return false;
             }
 
             if (fileUpdateIntervalInSeconds == 0) {
-                logger.error(
-                        "Azure Storage Cluster Discovery Extension - File update interval is deactivated but expiration is set!");
+                logger.error("The File Update Interval is deactivated but the File Expiration Interval is set. The extension cannot be started.");
                 return false;
             }
 
             if (fileExpirationInSeconds == 0) {
-                logger.error(
-                        "Azure Storage Cluster Discovery Extension - File expiration is deactivated but update interval is set!");
+                logger.error("The File Expiration Interval is deactivated but the File Update Interval is set. The extension cannot be started.");
                 return false;
             }
 
             if (!(fileUpdateIntervalInSeconds < fileExpirationInSeconds)) {
-                logger.error(
-                        "Azure Storage Cluster Discovery Extension - File update interval is larger than expiration interval!");
+                logger.error("The File Update Interval is larger than the File Expiration Interval. The extension cannot be started.");
                 return false;
             }
         }
