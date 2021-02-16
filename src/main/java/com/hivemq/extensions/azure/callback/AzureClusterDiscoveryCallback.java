@@ -16,7 +16,6 @@
 
 package com.hivemq.extensions.azure.callback;
 
-import com.hivemq.extensions.azure.client.AzureStorageClient;
 import com.azure.storage.blob.models.BlobItem;
 import com.hivemq.extension.sdk.api.annotations.NotNull;
 import com.hivemq.extension.sdk.api.annotations.Nullable;
@@ -24,6 +23,7 @@ import com.hivemq.extension.sdk.api.services.cluster.ClusterDiscoveryCallback;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryInput;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryOutput;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterNodeAddress;
+import com.hivemq.extensions.azure.client.AzureStorageClient;
 import com.hivemq.extensions.azure.config.ClusterNodeFile;
 import com.hivemq.extensions.azure.config.ConfigReader;
 import org.slf4j.Logger;
@@ -74,8 +74,7 @@ public class AzureClusterDiscoveryCallback implements ClusterDiscoveryCallback {
 
             saveOwnFile(clusterDiscoveryInput.getOwnClusterId(), clusterDiscoveryInput.getOwnAddress());
             clusterDiscoveryOutput.provideCurrentNodes(getNodeAddresses());
-        }
-        catch (final Exception ex) {
+        } catch (final Exception ex) {
             log.error("Initialization of the Azure Cluster Discovery Callback failed. {}", ex.getMessage());
         }
 
@@ -110,8 +109,7 @@ public class AzureClusterDiscoveryCallback implements ClusterDiscoveryCallback {
             }
 
             clusterDiscoveryOutput.provideCurrentNodes(getNodeAddresses());
-        }
-        catch (final Exception ex) {
+        } catch (final Exception ex) {
             log.error("Reload of the Azure Cluster Discovery Callback failed. {}", ex.getMessage());
         }
     }
@@ -122,35 +120,27 @@ public class AzureClusterDiscoveryCallback implements ClusterDiscoveryCallback {
             if (ownNodeFile != null) {
                 deleteOwnFile(clusterDiscoveryInput.getOwnClusterId());
             }
-        } catch (final Exception ex) {
+        } catch (final RuntimeException ex) {
             log.error("Destroy of the Azure Cluster Discovery Callback failed. {}", ex.getMessage());
         }
+
     }
 
-    private void saveOwnFile(final @NotNull String ownClusterId, final @NotNull ClusterNodeAddress ownAddress) {
+    private void saveOwnFile(final @NotNull String ownClusterId, final @NotNull ClusterNodeAddress ownAddress)
+            throws RuntimeException {
         final String blobKey = azureStorageClient.getStorageConfig().getFilePrefix() + ownClusterId;
         final ClusterNodeFile newNodeFile = new ClusterNodeFile(ownClusterId, ownAddress);
 
-        try {
-            azureStorageClient.saveBlob(blobKey, newNodeFile.toString());
-        }
-        catch (final Exception ex) {
-            log.error("Could not save own Azure Blob file. {}", ex.getMessage());
-        }
+        azureStorageClient.saveBlob(blobKey, newNodeFile.toString());
         ownNodeFile = newNodeFile;
 
         log.debug("Updated own Azure Blob file '{}'.", blobKey);
     }
 
-    private void deleteOwnFile(final @NotNull String ownClusterId) {
+    private void deleteOwnFile(final @NotNull String ownClusterId) throws RuntimeException {
         final String blobKey = azureStorageClient.getStorageConfig().getFilePrefix() + ownClusterId;
 
-        try {
-            azureStorageClient.deleteBlob(blobKey);
-        } catch (final Exception ex) {
-            log.error("Could not delete own Azure Blob file. {}", ex.getMessage());
-            return;
-        }
+        azureStorageClient.deleteBlob(blobKey);
         ownNodeFile = null;
 
         log.debug("Removed own Azure Blob file '{}'.", blobKey);
@@ -198,7 +188,8 @@ public class AzureClusterDiscoveryCallback implements ClusterDiscoveryCallback {
         final List<ClusterNodeFile> clusterNodeFiles = new ArrayList<>();
 
         try {
-            final Iterator<BlobItem> blobs = azureStorageClient.getBlobs(azureStorageClient.getStorageConfig().getFilePrefix());
+            final Iterator<BlobItem> blobs =
+                    azureStorageClient.getBlobs(azureStorageClient.getStorageConfig().getFilePrefix());
             blobs.forEachRemaining((BlobItem blob) -> {
                 final ClusterNodeFile nodeFile = getNodeFile(blob);
                 if (nodeFile != null) {
@@ -235,5 +226,7 @@ public class AzureClusterDiscoveryCallback implements ClusterDiscoveryCallback {
         return nodeFile;
     }
 
-    void setAzureStorageClient(final @NotNull AzureStorageClient azureStorageClient) { this.azureStorageClient = azureStorageClient; }
+    void setAzureStorageClient(final @NotNull AzureStorageClient azureStorageClient) {
+        this.azureStorageClient = azureStorageClient;
+    }
 }

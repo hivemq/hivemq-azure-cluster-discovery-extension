@@ -23,8 +23,8 @@ import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterNodeAddres
 import java.util.Base64;
 import java.util.regex.Pattern;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static com.hivemq.extensions.azure.util.Preconditions.*;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class ClusterNodeFile {
 
