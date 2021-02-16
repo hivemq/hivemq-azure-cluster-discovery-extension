@@ -43,8 +43,7 @@ public class ConfigReader {
         final File propertiesFile = new File(extensionHomeFolder, STORAGE_FILE);
 
         if (!propertiesFile.exists()) {
-            logger.error(
-                    "Could not find '{}'. Please verify that the properties file is located under '{}'.",
+            logger.error("Could not find '{}'. Please verify that the properties file is located under '{}'.",
                     STORAGE_FILE,
                     extensionHomeFolder);
             return null;
@@ -63,10 +62,11 @@ public class ConfigReader {
             final Properties properties = new Properties();
             properties.load(inputStream);
 
-            final AzureDiscoveryConfig
-                    azureDiscoveryConfig = ConfigFactory.create(AzureDiscoveryConfig.class, properties);
+            final AzureDiscoveryConfig azureDiscoveryConfig =
+                    ConfigFactory.create(AzureDiscoveryConfig.class, properties);
             if (!isValid(azureDiscoveryConfig)) {
-                logger.error("The Configuration of the Azure Storage Cluster Discovery Extension is not valid. The extension cannot be started.");
+                logger.error(
+                        "The Configuration of the Azure Storage Cluster Discovery Extension is not valid. The extension cannot be started.");
                 return null;
             }
             logger.trace("Read properties file '{}' successfully.", propertiesFile.getAbsolutePath());
@@ -75,7 +75,10 @@ public class ConfigReader {
         } catch (final FileNotFoundException e) {
             logger.error("Could not find the properties file '{}'", propertiesFile.getAbsolutePath());
         } catch (final IOException e) {
-            logger.error("An error occurred while reading the properties file {}. {}", propertiesFile.getAbsolutePath(), e.getMessage());
+            logger.error(
+                    "An error occurred while reading the properties file {}. {}",
+                    propertiesFile.getAbsolutePath(),
+                    e.getMessage());
         }
 
         return null;
@@ -99,11 +102,13 @@ public class ConfigReader {
         try {
             fileExpirationInSeconds = azureDiscoveryConfig.getFileExpirationInSeconds();
         } catch (final UnsupportedOperationException e) {
-            logger.error("The File Expiration Interval of the configuration file was empty. The extension cannot be started.");
+            logger.error(
+                    "The File Expiration Interval of the configuration file was empty. The extension cannot be started.");
             return false;
         }
         if (fileExpirationInSeconds < 0) {
-            logger.error("The File Expiration Interval of the configuration file was negative. The extension cannot be started.");
+            logger.error(
+                    "The File Expiration Interval of the configuration file was negative. The extension cannot be started.");
             return false;
         }
 
@@ -111,33 +116,39 @@ public class ConfigReader {
         try {
             fileUpdateIntervalInSeconds = azureDiscoveryConfig.getFileUpdateIntervalInSeconds();
         } catch (final UnsupportedOperationException e) {
-            logger.error("The File Update Interval of the configuration file was empty. The extension cannot be started.");
+            logger.error(
+                    "The File Update Interval of the configuration file was empty. The extension cannot be started.");
             return false;
         }
         if (fileUpdateIntervalInSeconds < 0) {
-            logger.error("The File Update Interval of the configuration file was negative. The extension cannot be started.");
+            logger.error(
+                    "The File Update Interval of the configuration file was negative. The extension cannot be started.");
             return false;
         }
 
         if (!(fileUpdateIntervalInSeconds == 0 && fileExpirationInSeconds == 0)) {
 
             if (fileUpdateIntervalInSeconds == fileExpirationInSeconds) {
-                logger.error("The File Update Interval is the same as the File Expiration Interval. The extension cannot be started.");
+                logger.error(
+                        "The File Update Interval is the same as the File Expiration Interval. The extension cannot be started.");
                 return false;
             }
 
             if (fileUpdateIntervalInSeconds == 0) {
-                logger.error("The File Update Interval is deactivated but the File Expiration Interval is set. The extension cannot be started.");
+                logger.error(
+                        "The File Update Interval is deactivated but the File Expiration Interval is set. The extension cannot be started.");
                 return false;
             }
 
             if (fileExpirationInSeconds == 0) {
-                logger.error("The File Expiration Interval is deactivated but the File Update Interval is set. The extension cannot be started.");
+                logger.error(
+                        "The File Expiration Interval is deactivated but the File Update Interval is set. The extension cannot be started.");
                 return false;
             }
 
             if (!(fileUpdateIntervalInSeconds < fileExpirationInSeconds)) {
-                logger.error("The File Update Interval is larger than the File Expiration Interval. The extension cannot be started.");
+                logger.error(
+                        "The File Update Interval is larger than the File Expiration Interval. The extension cannot be started.");
                 return false;
             }
         }

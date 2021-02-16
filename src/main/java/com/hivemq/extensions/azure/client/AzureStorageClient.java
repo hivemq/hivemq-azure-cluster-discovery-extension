@@ -26,8 +26,8 @@ import com.azure.storage.blob.models.BlobStorageException;
 import com.azure.storage.blob.models.ListBlobsOptions;
 import com.hivemq.extension.sdk.api.annotations.NotNull;
 import com.hivemq.extension.sdk.api.annotations.Nullable;
-import com.hivemq.extensions.azure.config.ConfigReader;
 import com.hivemq.extensions.azure.config.AzureDiscoveryConfig;
+import com.hivemq.extensions.azure.config.ConfigReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,7 +43,8 @@ public class AzureStorageClient {
 
     private static final Logger log = LoggerFactory.getLogger(AzureStorageClient.class);
 
-    private @NotNull ConfigReader configReader;
+    private @NotNull
+    final ConfigReader configReader;
     private @Nullable BlobContainerClient containerClient;
     private @Nullable AzureDiscoveryConfig azureDiscoveryConfig;
 
@@ -51,7 +52,7 @@ public class AzureStorageClient {
         this.configReader = configReader;
     }
 
-    public void createOrUpdate() throws IllegalStateException, IllegalArgumentException{
+    public void createOrUpdate() throws IllegalStateException, IllegalArgumentException {
 
         final AzureDiscoveryConfig newAzureDiscoveryConfig = configReader.readConfiguration();
         if (newAzureDiscoveryConfig == null) {
@@ -74,15 +75,15 @@ public class AzureStorageClient {
         try {
             return containerClient.exists();
         } catch (final BlobStorageException blobStorageException) {
-          throw new RuntimeException("Azure Storage Container existence check failed with status code " + blobStorageException.getStatusCode() + " and error code " + blobStorageException.getErrorCode());
+            throw new RuntimeException("Azure Storage Container existence check failed with status code " +
+                    blobStorageException.getStatusCode() + " and error code " + blobStorageException.getErrorCode());
         }
     }
 
     public void createContainer() throws RuntimeException {
         try {
             containerClient.create();
-            log.trace(
-                    "Created container {} in Azure Storage Account {}.",
+            log.trace("Created container {} in Azure Storage Account {}.",
                     containerClient.getBlobContainerName(),
                     containerClient.getAccountName());
         } catch (BlobStorageException error) {
@@ -91,7 +92,9 @@ public class AzureStorageClient {
                         "Cannot create container {} in Azure Storage Account because the container already exists.",
                         containerClient.getBlobContainerName());
             } else {
-                throw new RuntimeException("Azure Storage Container creation failed with status code " + error.getStatusCode() + " and error code " + error.getErrorCode());
+                throw new RuntimeException(
+                        "Azure Storage Container creation failed with status code " + error.getStatusCode() +
+                                " and error code " + error.getErrorCode());
             }
         }
     }
@@ -103,7 +106,9 @@ public class AzureStorageClient {
         try {
             blobClient.upload(blobData, content.length(), true);
         } catch (final BlobStorageException blobStorageException) {
-            throw new RuntimeException("Azure Storage Blob upload failed with status code " + blobStorageException.getStatusCode() + " and error code " + blobStorageException.getErrorCode());
+            throw new RuntimeException(
+                    "Azure Storage Blob upload failed with status code " + blobStorageException.getStatusCode() +
+                            " and error code " + blobStorageException.getErrorCode());
         }
     }
 
@@ -113,7 +118,9 @@ public class AzureStorageClient {
         try {
             blob.delete();
         } catch (final BlobStorageException blobStorageException) {
-            throw new RuntimeException("Azure Storage Blob delete failed with status code " + blobStorageException.getStatusCode() + " and error code " + blobStorageException.getErrorCode());
+            throw new RuntimeException(
+                    "Azure Storage Blob delete failed with status code " + blobStorageException.getStatusCode() +
+                            " and error code " + blobStorageException.getErrorCode());
         }
     }
 
@@ -125,7 +132,9 @@ public class AzureStorageClient {
         try {
             blobClient.download(outputStream);
         } catch (final BlobStorageException blobStorageException) {
-            throw new RuntimeException("Azure Storage Blob download failed with status code " + blobStorageException.getStatusCode() + " and error code " + blobStorageException.getErrorCode());
+            throw new RuntimeException(
+                    "Azure Storage Blob download failed with status code " + blobStorageException.getStatusCode() +
+                            " and error code " + blobStorageException.getErrorCode());
         }
 
         return outputStream.toString();
@@ -137,7 +146,9 @@ public class AzureStorageClient {
         try {
             return containerClient.listBlobs(new ListBlobsOptions().setPrefix(filePrefix), null).iterator();
         } catch (final BlobStorageException blobStorageException) {
-            throw new RuntimeException("Azure Storage Blobs retrieval failed with status code " + blobStorageException.getStatusCode() + " and error code " + blobStorageException.getErrorCode());
+            throw new RuntimeException(
+                    "Azure Storage Blobs retrieval failed with status code " + blobStorageException.getStatusCode() +
+                            " and error code " + blobStorageException.getErrorCode());
         }
     }
 
@@ -147,5 +158,7 @@ public class AzureStorageClient {
 
     public @Nullable BlobContainerClient getContainerClient() { return containerClient; }
 
-    void setContainerClient(final @NotNull BlobContainerClient containerClient) { this.containerClient = containerClient; }
+    void setContainerClient(final @NotNull BlobContainerClient containerClient) {
+        this.containerClient = containerClient;
+    }
 }
