@@ -22,27 +22,25 @@ import org.aeonbits.owner.Config;
 /**
  * @author Till Seeberger
  */
-public interface StorageConfig extends Config {
+public interface AzureDiscoveryConfig extends Config {
 
     @Key("connection-string")
     @NotNull String getConnectionString();
 
     @Key("container-name")
+    @DefaultValue("hivemq-discovery")
     @NotNull String getContainerName();
 
     @Key("file-prefix")
-    @NotNull
-    @DefaultValue("")
-    String getFilePrefix();
+    @DefaultValue("hivemq-node")
+    @NotNull String getFilePrefix();
 
     @Key("file-expiration")
-    @NotNull
     @DefaultValue("360")
-    Integer getFileExpirationInSeconds();
+    @NotNull Integer getFileExpirationInSeconds();
 
     @Key("update-interval")
-    @NotNull
     @DefaultValue("180")
-    Integer getFileUpdateIntervalInSeconds();
+    @NotNull Integer getFileUpdateIntervalInSeconds();
 
 }

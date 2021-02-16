@@ -1,3 +1,5 @@
+rootProject.name = "hivemq-azure-cluster-discovery-extension"
+
 pluginManagement {
     plugins {
         id("com.hivemq.extension") version "${extra["plugin.hivemq-extension.version"]}"
@@ -6,5 +8,3 @@ pluginManagement {
         id("org.asciidoctor.jvm.convert") version "${extra["plugin.asciidoctor.version"]}"
     }
 }
-
-rootProject.name = "hivemq-azure-cluster-discovery-extension"

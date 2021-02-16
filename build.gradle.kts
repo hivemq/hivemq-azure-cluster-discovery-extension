@@ -2,11 +2,6 @@ plugins {
     id("com.hivemq.extension")
     id("com.github.hierynomus.license")
     id("com.github.sgtsilvio.gradle.utf8")
-    id("org.asciidoctor.jvm.convert")
-}
-
-repositories {
-    mavenCentral()
 }
 
 /* ******************** metadata ******************** */
@@ -24,22 +19,15 @@ hivemqExtension {
 
 /* ******************** resources ******************** */
 
-val prepareAsciidoc by tasks.registering(Sync::class) {
-    from("README.adoc").into({ temporaryDir })
-}
-
-tasks.asciidoctor {
-    dependsOn(prepareAsciidoc)
-    sourceDir(prepareAsciidoc.map { it.destinationDir })
-}
-
 tasks.hivemqExtensionResources {
     from("LICENSE")
-    from("README.adoc") { rename { "README.txt" } }
-    from(tasks.asciidoctor)
 }
 
 /* ******************** dependencies ******************** */
+
+repositories {
+    mavenCentral()
+}
 
 dependencies {
     implementation("com.azure:azure-storage-blob:${property("azure-storage-blob.version")}")
