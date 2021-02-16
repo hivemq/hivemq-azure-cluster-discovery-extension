@@ -11,7 +11,7 @@ repositories {
 
 /* ******************** metadata ******************** */
 
-group = "com.hivemq.extensions"
+group = "com.hivemq.extensions.azure"
 description = "HiveMQ Discovery Extension based on usage of Azure Storage Blobs"
 
 hivemqExtension {

@@ -1,4 +1,4 @@
-/*
+package com.hivemq.extensions.azure;/*
  * Copyright 2021-present HiveMQ GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import callback.AzureClusterDiscoveryCallback;
+import com.hivemq.extensions.azure.callback.AzureClusterDiscoveryCallback;
 import com.hivemq.extension.sdk.api.ExtensionMain;
 import com.hivemq.extension.sdk.api.annotations.NotNull;
 import com.hivemq.extension.sdk.api.parameter.ExtensionStartInput;
@@ -22,7 +22,7 @@ import com.hivemq.extension.sdk.api.parameter.ExtensionStartOutput;
 import com.hivemq.extension.sdk.api.parameter.ExtensionStopInput;
 import com.hivemq.extension.sdk.api.parameter.ExtensionStopOutput;
 import com.hivemq.extension.sdk.api.services.Services;
-import config.ConfigReader;
+import com.hivemq.extensions.azure.config.ConfigReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

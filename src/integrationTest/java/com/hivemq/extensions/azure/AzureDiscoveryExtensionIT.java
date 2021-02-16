@@ -1,4 +1,4 @@
-/*
+package com.hivemq.extensions.azure;/*
  * Copyright 2021-present HiveMQ GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");

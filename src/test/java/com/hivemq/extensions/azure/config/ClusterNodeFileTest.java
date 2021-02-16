@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package config;
+package com.hivemq.extensions.azure.config;
 
 import com.hivemq.extension.sdk.api.annotations.NotNull;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterNodeAddress;
