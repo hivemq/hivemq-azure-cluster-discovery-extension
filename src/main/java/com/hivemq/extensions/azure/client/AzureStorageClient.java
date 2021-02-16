@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package azure;
+package com.hivemq.extensions.azure.client;
 
 import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
@@ -26,8 +26,8 @@ import com.azure.storage.blob.models.BlobStorageException;
 import com.azure.storage.blob.models.ListBlobsOptions;
 import com.hivemq.extension.sdk.api.annotations.NotNull;
 import com.hivemq.extension.sdk.api.annotations.Nullable;
-import config.ConfigReader;
-import config.StorageConfig;
+import com.hivemq.extensions.azure.config.ConfigReader;
+import com.hivemq.extensions.azure.config.StorageConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

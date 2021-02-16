@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package callback;
+package com.hivemq.extensions.azure.callback;
 
-import azure.AzureStorageClient;
+import com.hivemq.extensions.azure.client.AzureStorageClient;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.models.BlobItem;
 import com.hivemq.extension.sdk.api.parameter.ExtensionInformation;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryInput;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryOutput;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterNodeAddress;
-import config.ClusterNodeFileTest;
-import config.ConfigReader;
-import config.StorageConfig;
+import com.hivemq.extensions.azure.config.ClusterNodeFileTest;
+import com.hivemq.extensions.azure.config.ConfigReader;
+import com.hivemq.extensions.azure.config.StorageConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;

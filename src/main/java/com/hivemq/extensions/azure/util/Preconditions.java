@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package util;
+package com.hivemq.extensions.azure.util;
 
 import com.hivemq.extension.sdk.api.annotations.NotNull;
 import com.hivemq.extension.sdk.api.annotations.Nullable;

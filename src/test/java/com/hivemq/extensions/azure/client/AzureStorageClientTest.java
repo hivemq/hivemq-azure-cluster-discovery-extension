@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package azure;
+package com.hivemq.extensions.azure.client;
 
 import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
 import com.hivemq.extension.sdk.api.parameter.ExtensionInformation;
-import config.ClusterNodeFileTest;
-import config.ConfigReader;
+import com.hivemq.extensions.azure.config.ClusterNodeFileTest;
+import com.hivemq.extensions.azure.config.ConfigReader;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
