@@ -57,7 +57,8 @@ public class AzureClusterDiscoveryCallback implements ClusterDiscoveryCallback {
             final @NotNull ClusterDiscoveryOutput clusterDiscoveryOutput) {
 
         final LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
-        loggerContext.getLogger("com.azure.storage").setLevel(Level.OFF);
+        loggerContext.getLogger("com.azure").setLevel(Level.OFF);
+        loggerContext.getLogger("reactor").setLevel(Level.OFF);
 
         try {
             azureStorageClient.createOrUpdate();
