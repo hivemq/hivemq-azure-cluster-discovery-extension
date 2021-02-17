@@ -16,6 +16,8 @@
 
 package com.hivemq.extensions.discovery.azure.callback;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.LoggerContext;
 import com.azure.storage.blob.models.BlobItem;
 import com.hivemq.extension.sdk.api.annotations.NotNull;
 import com.hivemq.extension.sdk.api.annotations.Nullable;
@@ -54,10 +56,13 @@ public class AzureClusterDiscoveryCallback implements ClusterDiscoveryCallback {
             final @NotNull ClusterDiscoveryInput clusterDiscoveryInput,
             final @NotNull ClusterDiscoveryOutput clusterDiscoveryOutput) {
 
+        final LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+        loggerContext.getLogger("com.azure.storage").setLevel(Level.OFF);
+
         try {
             azureStorageClient.createOrUpdate();
         } catch (final IllegalStateException | IllegalArgumentException ex) {
-            log.error("Initialization of the Azure Cluster Discovery Callback failed. {}", ex.getMessage());
+            log.warn("Initialization of the Azure Cluster Discovery Callback failed. {}", ex.getMessage());
             return;
         }
 
@@ -75,7 +80,7 @@ public class AzureClusterDiscoveryCallback implements ClusterDiscoveryCallback {
             saveOwnFile(clusterDiscoveryInput.getOwnClusterId(), clusterDiscoveryInput.getOwnAddress());
             clusterDiscoveryOutput.provideCurrentNodes(getNodeAddresses());
         } catch (final Exception ex) {
-            log.error("Initialization of the Azure Cluster Discovery Callback failed. {}", ex.getMessage());
+            log.warn("Initialization of the Azure Cluster Discovery Callback failed. {}", ex.getMessage());
         }
 
     }
@@ -88,7 +93,7 @@ public class AzureClusterDiscoveryCallback implements ClusterDiscoveryCallback {
         try {
             azureStorageClient.createOrUpdate();
         } catch (final IllegalStateException | IllegalArgumentException ex) {
-            log.error("Reload of the Azure Cluster Discovery Callback failed. {}", ex.getMessage());
+            log.warn("Reload of the Azure Cluster Discovery Callback failed. {}", ex.getMessage());
             return;
         }
 
@@ -110,7 +115,7 @@ public class AzureClusterDiscoveryCallback implements ClusterDiscoveryCallback {
 
             clusterDiscoveryOutput.provideCurrentNodes(getNodeAddresses());
         } catch (final Exception ex) {
-            log.error("Reload of the Azure Cluster Discovery Callback failed. {}", ex.getMessage());
+            log.warn("Reload of the Azure Cluster Discovery Callback failed. {}", ex.getMessage());
         }
     }
 
@@ -121,7 +126,7 @@ public class AzureClusterDiscoveryCallback implements ClusterDiscoveryCallback {
                 deleteOwnFile(clusterDiscoveryInput.getOwnClusterId());
             }
         } catch (final RuntimeException ex) {
-            log.error("Destroy of the Azure Cluster Discovery Callback failed. {}", ex.getMessage());
+            log.warn("Destroy of the Azure Cluster Discovery Callback failed. {}", ex.getMessage());
         }
 
     }
@@ -171,7 +176,7 @@ public class AzureClusterDiscoveryCallback implements ClusterDiscoveryCallback {
                 try {
                     azureStorageClient.deleteBlob(blobKey);
                 } catch (final Exception ex) {
-                    log.error("Could not delete expired Azure Blob file '{}'. {}", blobKey, ex.getMessage());
+                    log.warn("Could not delete expired Azure Blob file '{}'. {}", blobKey, ex.getMessage());
                 }
             } else {
                 nodeAddresses.add(nodeFile.getClusterNodeAddress());
@@ -197,7 +202,7 @@ public class AzureClusterDiscoveryCallback implements ClusterDiscoveryCallback {
                 }
             });
         } catch (final Exception ex) {
-            log.error("Could not get Azure Blobs. {}", ex.getMessage());
+            log.warn("Could not get Azure Blobs. {}", ex.getMessage());
         }
 
         return clusterNodeFiles;
@@ -209,7 +214,7 @@ public class AzureClusterDiscoveryCallback implements ClusterDiscoveryCallback {
         try {
             fileContent = azureStorageClient.getBlobContent(blob.getName());
         } catch (RuntimeException e) {
-            log.error("An error occurred while downloading the Azure Blob. {}", e.getMessage());
+            log.warn("An error occurred while downloading the Azure Blob. {}", e.getMessage());
             return null;
         }
 
