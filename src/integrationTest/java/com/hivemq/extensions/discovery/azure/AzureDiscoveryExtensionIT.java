@@ -187,7 +187,7 @@ public class AzureDiscoveryExtensionIT {
         WaitingConsumer consumer = new WaitingConsumer();
 
         final String wrongConnectionString =
-                "DefxultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=XXX8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://172.17.0.1:" +
+                "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=XXX8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://172.17.0.1:" +
                         azureritePort + "/devstoreaccount1";
         final HiveMQTestContainerExtension reloadingNode =
                 createHiveMQNode(wrongConnectionString).withLogConsumer(consumer);
