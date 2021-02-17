@@ -1,10 +1,10 @@
 # HiveMQ Azure Cluster Discovery Extension
 
-*Extension Type*: Integration
+**Extension Type**: Integration
 
-*Version*: 1.0.0
+**Version**: 1.0.0
 
-*License*: Apache License 2.0
+**License**: Apache License 2.0
 
 ## Purpose
 
