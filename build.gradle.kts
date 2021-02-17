@@ -6,7 +6,7 @@ plugins {
 
 /* ******************** metadata ******************** */
 
-group = "com.hivemq.extensions.azure"
+group = "com.hivemq.extensions.discovery.azure"
 description = "HiveMQ Discovery Extension based on usage of Azure Storage Blobs"
 
 hivemqExtension {

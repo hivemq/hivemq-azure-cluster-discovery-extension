@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.hivemq.extensions.azure.config;
+package com.hivemq.extensions.discovery.azure.config;
 
 import com.hivemq.extension.sdk.api.parameter.ExtensionInformation;
 import org.junit.jupiter.api.BeforeEach;

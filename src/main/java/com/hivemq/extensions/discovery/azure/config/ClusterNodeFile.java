@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.hivemq.extensions.azure.config;
+package com.hivemq.extensions.discovery.azure.config;
 
 import com.hivemq.extension.sdk.api.annotations.NotNull;
 import com.hivemq.extension.sdk.api.annotations.Nullable;
@@ -23,7 +23,7 @@ import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterNodeAddres
 import java.util.Base64;
 import java.util.regex.Pattern;
 
-import static com.hivemq.extensions.azure.util.Preconditions.*;
+import static com.hivemq.extensions.discovery.azure.util.Preconditions.*;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class ClusterNodeFile {

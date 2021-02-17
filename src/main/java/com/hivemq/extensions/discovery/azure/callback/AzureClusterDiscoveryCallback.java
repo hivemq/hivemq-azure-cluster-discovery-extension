@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.hivemq.extensions.azure.callback;
+package com.hivemq.extensions.discovery.azure.callback;
 
 import com.azure.storage.blob.models.BlobItem;
 import com.hivemq.extension.sdk.api.annotations.NotNull;
@@ -23,9 +23,9 @@ import com.hivemq.extension.sdk.api.services.cluster.ClusterDiscoveryCallback;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryInput;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryOutput;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterNodeAddress;
-import com.hivemq.extensions.azure.client.AzureStorageClient;
-import com.hivemq.extensions.azure.config.ClusterNodeFile;
-import com.hivemq.extensions.azure.config.ConfigReader;
+import com.hivemq.extensions.discovery.azure.client.AzureStorageClient;
+import com.hivemq.extensions.discovery.azure.config.ClusterNodeFile;
+import com.hivemq.extensions.discovery.azure.config.ConfigReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +33,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import static com.hivemq.extensions.azure.util.StringUtil.isNullOrBlank;
+import static com.hivemq.extensions.discovery.azure.util.StringUtil.isNullOrBlank;
 
 /**
  * @author Till Seeberger
