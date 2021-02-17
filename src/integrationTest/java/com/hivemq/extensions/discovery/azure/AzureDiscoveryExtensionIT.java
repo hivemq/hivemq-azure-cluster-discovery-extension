@@ -1,4 +1,5 @@
-package com.hivemq.extensions.discovery.azure;/*
+package com.hivemq.extensions.discovery.azure;
+/*
  * Copyright 2021-present HiveMQ GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -262,7 +263,7 @@ public class AzureDiscoveryExtensionIT {
                 .withExtension(extensionDir.toFile())
                 .withHiveMQConfig(new File("src/integrationTest/resources/config.xml"))
                 .withNetwork(network)
-                .withLogLevel(Level.INFO)
+                .withLogLevel(Level.DEBUG)
                 .waitingFor(Wait.forLogMessage(".*Started HiveMQ in.*\\n", 1));
     }
 
