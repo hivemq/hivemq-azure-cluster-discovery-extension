@@ -30,6 +30,7 @@ repositories {
 }
 
 dependencies {
+    hivemqProvided("ch.qos.logback:logback-classic:${property("logback.version")}")
     implementation("com.azure:azure-storage-blob:${property("azure-storage-blob.version")}")
     implementation("org.aeonbits.owner:owner-java8:${property("owner.version")}")
 }

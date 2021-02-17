@@ -43,7 +43,7 @@ public class AzureStorageClient {
 
     private static final Logger log = LoggerFactory.getLogger(AzureStorageClient.class);
 
-    private @NotNull final ConfigReader configReader;
+    private final @NotNull ConfigReader configReader;
     private @Nullable BlobContainerClient containerClient;
     private @Nullable AzureDiscoveryConfig azureDiscoveryConfig;
 

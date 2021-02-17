@@ -23,6 +23,7 @@ import com.hivemq.extension.sdk.api.annotations.NotNull;
 import com.hivemq.testcontainer.junit5.HiveMQTestContainerExtension;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.event.Level;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.ToxiproxyContainer;
@@ -261,6 +262,7 @@ public class AzureDiscoveryExtensionIT {
                 .withExtension(extensionDir.toFile())
                 .withHiveMQConfig(new File("src/integrationTest/resources/config.xml"))
                 .withNetwork(network)
+                .withLogLevel(Level.INFO)
                 .waitingFor(Wait.forLogMessage(".*Started HiveMQ in.*\\n", 1));
     }
 
