@@ -1,4 +1,4 @@
-package com.hivemq.extensions.azure;/*
+package com.hivemq.extensions.discovery.azure;/*
  * Copyright 2021-present HiveMQ GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -186,7 +186,7 @@ public class AzureDiscoveryExtensionIT {
         WaitingConsumer consumer = new WaitingConsumer();
 
         final String wrongConnectionString =
-                "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=XXX8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://172.17.0.1:" +
+                "DefxultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=XXX8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://172.17.0.1:" +
                         azureritePort + "/devstoreaccount1";
         final HiveMQTestContainerExtension reloadingNode =
                 createHiveMQNode(wrongConnectionString).withLogConsumer(consumer);

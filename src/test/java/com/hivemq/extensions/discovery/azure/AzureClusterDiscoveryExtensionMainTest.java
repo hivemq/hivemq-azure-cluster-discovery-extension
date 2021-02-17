@@ -1,4 +1,4 @@
-package com.hivemq.extensions.azure;/*
+package com.hivemq.extensions.discovery.azure;/*
  * Copyright 2021-present HiveMQ GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,7 +15,6 @@ package com.hivemq.extensions.azure;/*
  */
 
 import com.hivemq.extension.sdk.api.parameter.*;
-import com.hivemq.extensions.azure.AzureClusterDiscoveryExtensionMain;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
