@@ -88,13 +88,13 @@ public class ConfigReader {
 
         final String connectionString = azureDiscoveryConfig.getConnectionString();
         if (isNullOrBlank(connectionString)) {
-            logger.warn("The Connection String of the configuration file was empty.");
+            logger.warn("The Connection String in the configuration file was empty.");
             return false;
         }
 
         final String containerName = azureDiscoveryConfig.getContainerName();
         if (isNullOrBlank(containerName)) {
-            logger.warn("The Container Name of the configuration file was empty.");
+            logger.warn("The Container Name in the configuration file was empty.");
             return false;
         }
 
@@ -103,12 +103,12 @@ public class ConfigReader {
             fileExpirationInSeconds = azureDiscoveryConfig.getFileExpirationInSeconds();
         } catch (final UnsupportedOperationException e) {
             logger.warn(
-                    "The File Expiration Interval of the configuration file was empty.");
+                    "The File Expiration Interval in the configuration file was not valid. {}.", e.getMessage());
             return false;
         }
         if (fileExpirationInSeconds < 0) {
             logger.warn(
-                    "The File Expiration Interval of the configuration file was negative.");
+                    "The File Expiration Interval in the configuration file was negative.");
             return false;
         }
 
@@ -117,12 +117,12 @@ public class ConfigReader {
             fileUpdateIntervalInSeconds = azureDiscoveryConfig.getFileUpdateIntervalInSeconds();
         } catch (final UnsupportedOperationException e) {
             logger.warn(
-                    "The File Update Interval of the configuration file was empty.");
+                    "The File Update Interval in the configuration file was not valid. {}.", e.getMessage());
             return false;
         }
         if (fileUpdateIntervalInSeconds < 0) {
             logger.warn(
-                    "The File Update Interval of the configuration file was negative.");
+                    "The File Update Interval in the configuration file was negative.");
             return false;
         }
 

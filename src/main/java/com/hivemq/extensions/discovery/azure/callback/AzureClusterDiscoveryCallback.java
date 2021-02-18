@@ -63,7 +63,7 @@ public class AzureClusterDiscoveryCallback implements ClusterDiscoveryCallback {
         try {
             azureStorageClient.createOrUpdate();
         } catch (final IllegalStateException | IllegalArgumentException ex) {
-            log.warn("Initialization of the Azure Cluster Discovery Callback failed. {}", ex.getMessage());
+            log.warn("Initialization of the Azure Cluster Discovery Callback failed. {}", getRootCause(ex).getMessage());
             return;
         }
 
@@ -81,7 +81,7 @@ public class AzureClusterDiscoveryCallback implements ClusterDiscoveryCallback {
             saveOwnFile(clusterDiscoveryInput.getOwnClusterId(), clusterDiscoveryInput.getOwnAddress());
             clusterDiscoveryOutput.provideCurrentNodes(getNodeAddresses());
         } catch (final Exception ex) {
-            log.warn("Initialization of the Azure Cluster Discovery Callback failed. {}", ex.getMessage());
+            log.warn("Initialization of the Azure Cluster Discovery Callback failed. {}", getRootCause(ex).getMessage());
         }
 
     }
@@ -94,7 +94,7 @@ public class AzureClusterDiscoveryCallback implements ClusterDiscoveryCallback {
         try {
             azureStorageClient.createOrUpdate();
         } catch (final IllegalStateException | IllegalArgumentException ex) {
-            log.warn("Reload of the Azure Cluster Discovery Callback failed. {}", ex.getMessage());
+            log.warn("Reload of the Azure Cluster Discovery Callback failed. {}", getRootCause(ex).getMessage());
             return;
         }
 
@@ -116,7 +116,7 @@ public class AzureClusterDiscoveryCallback implements ClusterDiscoveryCallback {
 
             clusterDiscoveryOutput.provideCurrentNodes(getNodeAddresses());
         } catch (final Exception ex) {
-            log.warn("Reload of the Azure Cluster Discovery Callback failed. {}", ex.getMessage());
+            log.warn("Reload of the Azure Cluster Discovery Callback failed. {}", getRootCause(ex).getMessage());
         }
     }
 
@@ -127,7 +127,7 @@ public class AzureClusterDiscoveryCallback implements ClusterDiscoveryCallback {
                 deleteOwnFile(clusterDiscoveryInput.getOwnClusterId());
             }
         } catch (final RuntimeException ex) {
-            log.warn("Destroy of the Azure Cluster Discovery Callback failed. {}", ex.getMessage());
+            log.warn("Destroy of the Azure Cluster Discovery Callback failed. {}", getRootCause(ex).getMessage());
         }
 
     }
@@ -177,7 +177,7 @@ public class AzureClusterDiscoveryCallback implements ClusterDiscoveryCallback {
                 try {
                     azureStorageClient.deleteBlob(blobKey);
                 } catch (final Exception ex) {
-                    log.warn("Could not delete expired Azure Blob file '{}'. {}", blobKey, ex.getMessage());
+                    log.warn("Could not delete expired Azure Blob file '{}'. {}", blobKey, getRootCause(ex));
                 }
             } else {
                 nodeAddresses.add(nodeFile.getClusterNodeAddress());
@@ -203,7 +203,7 @@ public class AzureClusterDiscoveryCallback implements ClusterDiscoveryCallback {
                 }
             });
         } catch (final Exception ex) {
-            log.warn("Could not get Azure Blobs. {}", ex.getMessage());
+            log.warn("Could not get Azure Blobs. {}", getRootCause(ex).getMessage());
         }
 
         return clusterNodeFiles;
@@ -215,7 +215,7 @@ public class AzureClusterDiscoveryCallback implements ClusterDiscoveryCallback {
         try {
             fileContent = azureStorageClient.getBlobContent(blob.getName());
         } catch (RuntimeException e) {
-            log.warn("An error occurred while downloading the Azure Blob. {}", e.getMessage());
+            log.warn("An error occurred while downloading the Azure Blob. {}", getRootCause(e).getMessage());
             return null;
         }
 
@@ -234,5 +234,15 @@ public class AzureClusterDiscoveryCallback implements ClusterDiscoveryCallback {
 
     void setAzureStorageClient(final @NotNull AzureStorageClient azureStorageClient) {
         this.azureStorageClient = azureStorageClient;
+    }
+
+    private @NotNull Throwable getRootCause(final @NotNull Throwable e) {
+        Throwable cause;
+        Throwable result = e;
+
+        while(null != (cause = result.getCause())  && (result != cause) ) {
+            result = cause;
+        }
+        return result;
     }
 }
