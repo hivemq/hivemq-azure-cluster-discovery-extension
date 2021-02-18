@@ -55,9 +55,16 @@ public class AzureStorageClient {
 
         final AzureDiscoveryConfig newAzureDiscoveryConfig = configReader.readConfiguration();
         if (newAzureDiscoveryConfig == null) {
-            throw new IllegalStateException("Configuration of the Azure Cluster Discovery Extension couldn't be loaded.");
+            if (azureDiscoveryConfig != null) {
+                log.warn("Configuration of the Azure Cluster Discovery Extension couldn't be loaded. Using last valid configuration.");
+            }
+            else {
+                throw new IllegalStateException("Configuration of the Azure Cluster Discovery Extension couldn't be loaded.");
+            }
         }
-        azureDiscoveryConfig = newAzureDiscoveryConfig;
+        else {
+            azureDiscoveryConfig = newAzureDiscoveryConfig;
+        }
 
         final String connectionString = azureDiscoveryConfig.getConnectionString();
         final String containerName = azureDiscoveryConfig.getContainerName();
