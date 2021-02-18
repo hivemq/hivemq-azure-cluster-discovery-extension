@@ -8,6 +8,8 @@
 
 ## Purpose
 
+![Extension Overview](img/AzureClusterDiscovery.svg)
+
 This HiveMQ extension allows your HiveMQ cluster nodes to discover each other dynamically by regularly exchanging their information via Azure Blobs in an Azure Blob Storage Container.
 
 HiveMQ instances are added at runtime as soon as they become available by placing their information, on how to connect to them, to the configured Azure Storage Container.
