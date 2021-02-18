@@ -29,11 +29,7 @@
         },
         "vmSize": {
             "type": "string",
-            "defaultValue": "Standard_A4_v2",
-            "allowedValues": [
-                "Standard_A4_v2",
-                "Standard_A8_v2"
-            ],
+            "defaultValue": "Standard_F4s_v2",
             "metadata": {
                 "description": "The size of the Virtual Machine"
             }
@@ -83,8 +79,7 @@
         },
         "storageAccountName": "[toLower(uniqueString(resourceGroup().id) )]",
         "containerName": "[concat('hivemq-cluster-container-', uniqueString( resourceGroup().id, deployment().name ))]",
-        // TODO Change this to the github page
-        "setupScriptLink": "https://hivemqstorage.blob.core.windows.net/azure-extension/hivemq_node_setup.sh?sp=r&st=2021-02-16T15:19:27Z&se=2021-02-16T23:19:27Z&spr=https&sv=2019-12-12&sr=b&sig=2%2FIzXD12OQm0qdul6ADpPmNW1kJhtkxcEWz7UST4z1o%3D"
+        "setupScriptLink": "https://github.com/hivemq/hivemq-azure-cluster-discovery-extension/blob/master/arm-quickstart-templates/hivemq-vm-cluster/scripts/hivemq_node_setup.sh"
     },
     "resources": [
 
