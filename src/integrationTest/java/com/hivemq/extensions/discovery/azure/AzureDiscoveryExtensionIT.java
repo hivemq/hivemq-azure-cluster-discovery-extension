@@ -263,7 +263,6 @@ public class AzureDiscoveryExtensionIT {
                 .withExtension(extensionDir.toFile())
                 .withHiveMQConfig(new File("src/integrationTest/resources/config.xml"))
                 .withNetwork(network)
-                .withLogLevel(Level.DEBUG)
                 .waitingFor(Wait.forLogMessage(".*Started HiveMQ in.*\\n", 1));
     }
 
