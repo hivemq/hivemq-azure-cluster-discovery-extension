@@ -79,7 +79,7 @@
         },
         "storageAccountName": "[toLower(uniqueString(resourceGroup().id) )]",
         "containerName": "[concat('hivemq-cluster-container-', uniqueString( resourceGroup().id, deployment().name ))]",
-        "setupScriptLink": "https://github.com/hivemq/hivemq-azure-cluster-discovery-extension/blob/master/arm-quickstart-templates/hivemq-vm-cluster/scripts/hivemq_node_setup.sh"
+        "setupScriptLink": "https://raw.githubusercontent.com/hivemq/hivemq-azure-cluster-discovery-extension/master/arm-quickstart-templates/hivemq-vm-cluster/scripts/hivemq_node_setup.sh"
     },
     "resources": [
 
