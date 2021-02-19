@@ -1,4 +1,9 @@
+
 # HiveMQ Azure Cluster Discovery Extension
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/hivemq/hivemq-azure-cluster-discovery-extension?style=for-the-badge)
+![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/hivemq/hivemq-azure-cluster-discovery-extension/Gradle%20Check/master?style=for-the-badge)
+![GitHub all releases](https://img.shields.io/github/downloads/hivemq/hivemq-azure-cluster-discovery-extension/total?style=for-the-badge)
+
 
 **Extension Type**: Integration
 
