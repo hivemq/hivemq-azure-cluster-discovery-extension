@@ -6,7 +6,7 @@ plugins {
 
 /* ******************** metadata ******************** */
 
-group = "com.hivemq.extensions.discovery.azure"
+group = "com.hivemq.extensions"
 description = "HiveMQ Discovery Extension based on usage of Azure Storage Blobs"
 
 hivemqExtension {
@@ -39,9 +39,9 @@ tasks.hivemqExtensionResources {
 
 dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:${property("junit.version")}")
-    testImplementation("org.mockito:mockito-inline:${property("mockito.version")}")
-    testImplementation("org.awaitility:awaitility:${property("awaitlity.version")}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+    testImplementation("org.mockito:mockito-core:${property("mockito.version")}")
+    testImplementation("org.awaitility:awaitility:${property("awaitlity.version")}")
 }
 
 tasks.withType<Test> {
@@ -55,8 +55,8 @@ tasks.withType<Test> {
 /* ******************** integration test ******************** */
 
 sourceSets.create("integrationTest") {
-    compileClasspath += sourceSets.main.get().output + sourceSets.test.get().output
-    runtimeClasspath += sourceSets.main.get().output + sourceSets.test.get().output
+    compileClasspath += sourceSets.main.get().output
+    runtimeClasspath += sourceSets.main.get().output
 }
 
 val integrationTestImplementation: Configuration by configurations.getting {
@@ -84,8 +84,8 @@ val integrationTest by tasks.registering(Test::class) {
     group = "verification"
     description = "Runs integration tests."
 
-    testClassesDirs = sourceSets["integrationTest"].output.classesDirs
-    classpath = sourceSets["integrationTest"].runtimeClasspath
+    testClassesDirs = sourceSets[name].output.classesDirs
+    classpath = sourceSets[name].runtimeClasspath
     shouldRunAfter(tasks.test)
     dependsOn(prepareExtensionTest)
 }
