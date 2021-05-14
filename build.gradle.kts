@@ -17,12 +17,6 @@ hivemqExtension {
     sdkVersion = "${property("hivemq-extension-sdk.version")}"
 }
 
-/* ******************** resources ******************** */
-
-tasks.hivemqExtensionResources {
-    from("LICENSE")
-}
-
 /* ******************** dependencies ******************** */
 
 repositories {
@@ -35,6 +29,11 @@ dependencies {
     implementation("org.aeonbits.owner:owner-java8:${property("owner.version")}")
 }
 
+/* ******************** resources ******************** */
+
+tasks.hivemqExtensionResources {
+    from("LICENSE")
+}
 
 /* ******************** test ******************** */
 
@@ -45,7 +44,7 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
 }
 
-tasks.withType<Test>().configureEach {
+tasks.withType<Test> {
     useJUnitPlatform()
 
     testLogging {
@@ -55,22 +54,22 @@ tasks.withType<Test>().configureEach {
 
 /* ******************** integration test ******************** */
 
-sourceSets {
-    create("integrationTest") {
-        compileClasspath += sourceSets.main.get().output + sourceSets.test.get().output
-        runtimeClasspath += sourceSets.main.get().output + sourceSets.test.get().output
-    }
+sourceSets.create("integrationTest") {
+    compileClasspath += sourceSets.main.get().output + sourceSets.test.get().output
+    runtimeClasspath += sourceSets.main.get().output + sourceSets.test.get().output
 }
 
-configurations {
-    getByName("integrationTestImplementation").extendsFrom(testImplementation.get())
-    getByName("integrationTestRuntimeOnly").extendsFrom(testRuntimeOnly.get())
+val integrationTestImplementation: Configuration by configurations.getting {
+    extendsFrom(configurations.testImplementation.get())
+}
+val integrationTestRuntimeOnly: Configuration by configurations.getting {
+    extendsFrom(configurations.testRuntimeOnly.get())
 }
 
 dependencies {
-    "integrationTestImplementation"("org.testcontainers:testcontainers:${property("testcontainers.version")}")
-    "integrationTestImplementation"("org.testcontainers:toxiproxy:${property("testcontainers.version")}")
-    "integrationTestImplementation"("com.hivemq:hivemq-testcontainer-junit5:${property("hivemq-testcontainer.version")}")
+    integrationTestImplementation("org.testcontainers:testcontainers:${property("testcontainers.version")}")
+    integrationTestImplementation("org.testcontainers:toxiproxy:${property("testcontainers.version")}")
+    integrationTestImplementation("com.hivemq:hivemq-testcontainer-junit5:${property("hivemq-testcontainer.version")}")
 }
 
 val prepareExtensionTest by tasks.registering(Sync::class) {
