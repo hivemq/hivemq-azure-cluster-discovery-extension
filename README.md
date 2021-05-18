@@ -1,9 +1,8 @@
-
 # HiveMQ Azure Cluster Discovery Extension
+
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/hivemq/hivemq-azure-cluster-discovery-extension?style=for-the-badge)
 ![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/hivemq/hivemq-azure-cluster-discovery-extension/Gradle%20Check/master?style=for-the-badge)
 ![GitHub all releases](https://img.shields.io/github/downloads/hivemq/hivemq-azure-cluster-discovery-extension/total?style=for-the-badge)
-
 
 **Extension Type**: Integration
 
@@ -36,7 +35,8 @@ If they are not set, the `bind-address` and `bind-port` will be used.
 
 The `azDiscovery.properties` can be reloaded during runtime.
 
-## General Configuration
+### General Configuration
+
 | Config Name        | Default Value            | Description  |
 | ------------- |:-------------:|:-----|
 | connection&#x2011;string |    | The required connection string of your Azure Storage Account. See the [Azure Documentation](https://docs.microsoft.com/de-de/com.hivemq.extensions.azure/storage/common/storage-configure-connection-string) for more information.
@@ -55,7 +55,6 @@ file-expiration=120
 update-interval=60
 ```
 
-
 ## First Steps
 
 * Create an Azure Storage Account.
@@ -63,14 +62,14 @@ update-interval=60
 * Place the Connection String into the `azDiscovery.properties` file of your HiveMQ nodes.  
 * Start your HiveMQ nodes and verify the discovery.
 
-## Need help?
+## Need Help?
 
 If you encounter any problems, we are happy to help.
 The best place to get in contact is our [Support](http://www.hivemq.com/support/).
 
 ## Contributing
 
-If you want to contribute to HiveMQ Azure Cluster Discovery Extension, see the [Contributing Guideline](CONTRIBUTING.md).
+If you want to contribute to HiveMQ Azure Cluster Discovery Extension, see the [contributing guidelines](CONTRIBUTING.md).
 
 ## License
 
