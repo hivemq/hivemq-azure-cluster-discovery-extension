@@ -23,7 +23,7 @@ Additionally, every broker updates its own file on a regular basis to prevent th
 
 ## Installation
 
-* Download the extension from the [HiveMQ Website](https://www.hivemq.com/downloads) or from the [GitHub Releases Page](https://github.com/hivemq/hivemq-azure-cluster-discovery-extension/releases).
+* Download the extension from the [HiveMQ Website](https://www.hivemq.com/releases/extensions/hivemq-azure-cluster-discovery-extension-1.0.0.zip) or from the [GitHub Releases Page](https://github.com/hivemq/hivemq-azure-cluster-discovery-extension/releases/latest).
 * Copy the content of the zip file to the `extensions` folder of your HiveMQ nodes.
 * Modify the `azDiscovery.properties` file for your needs.
 * Change the [Discovery Mechanism](https://www.hivemq.com/docs/latest/hivemq/cluster.html#discovery) of HiveMQ to `extension`.
