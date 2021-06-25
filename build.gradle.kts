@@ -4,8 +4,6 @@ plugins {
     id("com.github.sgtsilvio.gradle.utf8")
 }
 
-/* ******************** metadata ******************** */
-
 group = "com.hivemq.extensions"
 description = "HiveMQ Discovery Extension based on usage of Azure Storage Blobs"
 
@@ -19,12 +17,6 @@ hivemqExtension {
     resources {
         from("LICENSE")
     }
-}
-
-/* ******************** dependencies ******************** */
-
-repositories {
-    mavenCentral()
 }
 
 dependencies {
@@ -42,7 +34,7 @@ dependencies {
     testImplementation("org.awaitility:awaitility:${property("awaitlity.version")}")
 }
 
-tasks.withType<Test> {
+tasks.withType<Test>().configureEach {
     useJUnitPlatform()
 
     testLogging {
