@@ -210,14 +210,11 @@ class AzureDiscoveryExtensionIT {
             reloadingNode.start();
             normalNode.start();
 
-            final String replacedConfig =
-                    Files.readString(Path.of(getClass().getResource("/azDiscovery.properties").getPath()))
-                            .replace("<your-connection-string>", createDockerAzuriteConnectionString());
             reloadingNode.copyFileToContainer(
-                    Transferable.of(replacedConfig.getBytes()),
+                    Transferable.of(createConfig(createDockerAzuriteConnectionString()).getBytes()),
                     "/opt/hivemq/extensions/hivemq-azure-cluster-discovery-extension/azDiscovery.properties");
 
-            consumer.waitUntil(frame -> frame.getUtf8String().contains("Cluster size = 2"), 60, SECONDS);
+            consumer.waitUntil(frame -> frame.getUtf8String().contains("Cluster size = 2"), 90, SECONDS);
         }
     }
 
@@ -270,7 +267,7 @@ class AzureDiscoveryExtensionIT {
                 "BlobEndpoint=http://" + host + ":" + port + "/devstoreaccount1";
     }
 
-    private @NotNull String createDockerAzuriteConnectionString() {
+    private static @NotNull String createDockerAzuriteConnectionString() {
         return createAzuriteConnectionString(AZURITE_NETWORK_ALIAS, AZURITE_PORT);
     }
 
@@ -278,14 +275,19 @@ class AzureDiscoveryExtensionIT {
         return createAzuriteConnectionString("127.0.0.1", azureriteContainer.getMappedPort(AZURITE_PORT));
     }
 
+    private static @NotNull String createConfig(final @NotNull String connectionString) {
+        return "connection-string=" + connectionString + '\n' + //
+                "container-name=" + BLOB_CONTAINER_NAME + '\n' + //
+                "file-prefix=hivemq-node-\n" + //
+                "file-expiration=15\n" + //
+                "update-interval=5";
+    }
+
     private @NotNull HiveMQTestContainerExtension createHiveMQNode(final @NotNull String connectionString)
             throws IOException {
 
         final Path configFile = Files.createTempDirectory("az-extension-test").resolve("azDiscovery.properties");
-        final String replacedConfig =
-                Files.readString(Path.of(getClass().getResource("/azDiscovery.properties").getPath()))
-                        .replace("<your-connection-string>", connectionString);
-        Files.writeString(configFile, replacedConfig);
+        Files.writeString(configFile, createConfig(connectionString));
 
         return new HiveMQTestContainerExtension(DockerImageName.parse("hivemq/hivemq4").withTag("latest")) //
                 .withHiveMQConfig(MountableFile.forClasspathResource("config.xml"))
