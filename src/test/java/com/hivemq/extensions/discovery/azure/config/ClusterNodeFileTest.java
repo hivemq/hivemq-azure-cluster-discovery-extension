@@ -28,93 +28,80 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class ClusterNodeFileTest {
 
-    private final ClusterNodeAddress clusterNodeAddress = new ClusterNodeAddress("127.0.0.1", 7800);
-    private final String nodeId = "ABCD12";
+    private final @NotNull String nodeId = "ABCD12";
+    private final @NotNull ClusterNodeAddress clusterNodeAddress = new ClusterNodeAddress("127.0.0.1", 7800);
 
     @Test
-    public void test_cluster_node_file_successful_create() {
+    void getClusterId() {
         final ClusterNodeFile clusterNodeFile = new ClusterNodeFile(nodeId, clusterNodeAddress);
-        assertNotNull(clusterNodeFile);
+        assertSame(nodeId, clusterNodeFile.getClusterId());
     }
 
     @Test
-    public void test_cluster_node_file_successful_get_node_address() {
+    void getClusterNodeAddress() {
         final ClusterNodeFile clusterNodeFile = new ClusterNodeFile(nodeId, clusterNodeAddress);
-        assertNotNull(clusterNodeFile.getClusterNodeAddress());
+        assertSame(clusterNodeAddress, clusterNodeFile.getClusterNodeAddress());
     }
 
     @Test
-    public void test_cluster_node_file_successful_get_cluster_id() {
-        final ClusterNodeFile clusterNodeFile = new ClusterNodeFile(nodeId, clusterNodeAddress);
-        assertNotNull(clusterNodeFile.getClusterId());
-    }
-
-    @Test
-    public void test_cluster_node_file_equals() {
-        final ClusterNodeFile clusterNodeFile = new ClusterNodeFile(nodeId, clusterNodeAddress);
-        final String clusterNodeFileString = clusterNodeFile.toString();
-        final ClusterNodeFile newClusterNodeFile = ClusterNodeFile.parseClusterNodeFile(clusterNodeFileString);
-        assertTrue(clusterNodeFile.toString().contentEquals(newClusterNodeFile.toString()));
-    }
-
-    @Test
-    public void test_cluster_node_file_not_equal() {
-        final ClusterNodeFile clusterNodeFile1 = new ClusterNodeFile(nodeId + 1, clusterNodeAddress);
-        final ClusterNodeFile clusterNodeFile2 = new ClusterNodeFile(nodeId + 2, clusterNodeAddress);
-        assertFalse(clusterNodeFile1.toString().contentEquals(clusterNodeFile2.toString()));
-    }
-
-    @Test
-    public void test_cluster_node_file_nodeId_null() {
+    void whenNodeIdIsNull_thenThrowNPE() {
         assertThrows(NullPointerException.class, () -> new ClusterNodeFile(null, clusterNodeAddress));
     }
 
     @Test
-    public void test_cluster_node_file_nodeId_blank() {
+    void whenNodeIdIsBlank_thenThrowIllegalArgument() {
         assertThrows(IllegalArgumentException.class, () -> new ClusterNodeFile(" ", clusterNodeAddress));
     }
 
     @Test
-    public void test_cluster_node_file_cluster_node_address_null() {
+    void whenClusterNodeAddressIsNull_thenThrowNPE() {
         assertThrows(NullPointerException.class, () -> new ClusterNodeFile(nodeId, null));
     }
 
     @Test
-    public void test_cluster_node_file_expiration_deactivated() {
+    void expiration_deactivated() {
         final ClusterNodeFile clusterNodeFile = new ClusterNodeFile(nodeId, clusterNodeAddress);
         assertFalse(clusterNodeFile.isExpired(0));
     }
 
     @Test
-    public void test_cluster_node_file_expired() throws Exception {
+    void expired() throws Exception {
         final ClusterNodeFile clusterNodeFile = new ClusterNodeFile(nodeId, clusterNodeAddress);
         TimeUnit.SECONDS.sleep(2);
         assertTrue(clusterNodeFile.isExpired(1));
     }
 
     @Test
-    public void test_cluster_node_file_not_expired() {
+    void not_expired() {
         final ClusterNodeFile clusterNodeFile = new ClusterNodeFile(nodeId, clusterNodeAddress);
         assertFalse(clusterNodeFile.isExpired(1));
     }
 
     @Test
-    public void test_cluster_node_file_not_expired_sleep() throws Exception {
+    void not_expired_sleep() throws Exception {
         final ClusterNodeFile clusterNodeFile = new ClusterNodeFile(nodeId, clusterNodeAddress);
         TimeUnit.SECONDS.sleep(1);
         assertFalse(clusterNodeFile.isExpired(2));
     }
 
     @Test
-    public void test_parseClusterNodeFile_success() {
+    void parseClusterNodeFile_success() {
         final ClusterNodeFile clusterNodeFile1 = new ClusterNodeFile(nodeId, clusterNodeAddress);
         final String clusterNodeFile1String = clusterNodeFile1.toString();
         final ClusterNodeFile clusterNodeFile2 = ClusterNodeFile.parseClusterNodeFile(clusterNodeFile1String);
-        assertTrue(clusterNodeFile1.toString().contentEquals(clusterNodeFile2.toString()));
+        assertNotNull(clusterNodeFile2);
+        assertEquals(clusterNodeFile1String, clusterNodeFile2.toString());
     }
 
     @Test
-    public void test_parseClusterNodeFile_false_version() {
+    void parseClusterNodeFile_wrongCharset() {
+        final String clusterNodeFileString = new String("abcd".getBytes(), StandardCharsets.UTF_16);
+        final ClusterNodeFile clusterNodeFile = ClusterNodeFile.parseClusterNodeFile(clusterNodeFileString);
+        assertNull(clusterNodeFile);
+    }
+
+    @Test
+    void parseClusterNodeFile_wrongVersion() {
         final String clusterNodeFileString = createClusterNodeFileString(
                 "3",
                 Long.toString(System.currentTimeMillis()),
@@ -127,14 +114,7 @@ public class ClusterNodeFileTest {
     }
 
     @Test
-    public void test_parseClusterNodeFile_false_charset() {
-        final String clusterNodeFileString = new String("abcd".getBytes(), StandardCharsets.UTF_16);
-        final ClusterNodeFile clusterNodeFile = ClusterNodeFile.parseClusterNodeFile(clusterNodeFileString);
-        assertNull(clusterNodeFile);
-    }
-
-    @Test
-    public void test_parseClusterNodeFile_version_empty() {
+    void parseClusterNodeFile_emptyVersion() {
         final String clusterNodeFileString = createClusterNodeFileString(
                 "",
                 Long.toString(System.currentTimeMillis()),
@@ -147,7 +127,7 @@ public class ClusterNodeFileTest {
     }
 
     @Test
-    public void test_parseClusterNodeFile_node_id_empty() {
+    void parseClusterNodeFile_emptyNodeId() {
         final String clusterNodeFileString = createClusterNodeFileString(
                 ClusterNodeFile.CONTENT_VERSION,
                 Long.toString(System.currentTimeMillis()),
@@ -160,7 +140,7 @@ public class ClusterNodeFileTest {
     }
 
     @Test
-    public void test_parseClusterNodeFile_host_empty() {
+    void parseClusterNodeFile_emptyHost() {
         final String clusterNodeFileString = createClusterNodeFileString(
                 ClusterNodeFile.CONTENT_VERSION,
                 Long.toString(System.currentTimeMillis()),
@@ -173,7 +153,7 @@ public class ClusterNodeFileTest {
     }
 
     @Test
-    public void test_parseClusterNodeFile_port_not_number() {
+    void parseClusterNodeFile_portIsNotANumber() {
         final String clusterNodeFileString = createClusterNodeFileString(
                 ClusterNodeFile.CONTENT_VERSION,
                 Long.toString(System.currentTimeMillis()),
@@ -186,7 +166,7 @@ public class ClusterNodeFileTest {
     }
 
     @Test
-    public void test_parseClusterNodeFile_creation_time_not_number() {
+    void parseClusterNodeFile_creationTimeIsNotANumber() {
         final String clusterNodeFileString = createClusterNodeFileString(
                 ClusterNodeFile.CONTENT_VERSION,
                 "abcd",
@@ -199,78 +179,52 @@ public class ClusterNodeFileTest {
     }
 
     @Test
-    public void test_parseClusterNodeFile_too_short() {
-        final String clusterNodeFileString = createClusterNodeFileStringTooShort(
-                ClusterNodeFile.CONTENT_VERSION,
-                Long.toString(System.currentTimeMillis()),
-                nodeId,
-                clusterNodeAddress.getHost(),
-                Integer.toString(clusterNodeAddress.getPort()));
+    void parseClusterNodeFile_tooShort() {
+        final String clusterNodeFileString = encodeClusterNodeFileString(
+                ClusterNodeFile.CONTENT_VERSION + ClusterNodeFile.CONTENT_SEPARATOR + System.currentTimeMillis() +
+                        ClusterNodeFile.CONTENT_SEPARATOR);
 
         final ClusterNodeFile clusterNodeFile = ClusterNodeFile.parseClusterNodeFile(clusterNodeFileString);
         assertNull(clusterNodeFile);
     }
 
     @Test
-    public void test_parseClusterNodeFile_too_long() {
-        final String clusterNodeFileString = createClusterNodeFileStringTooLong(
-                ClusterNodeFile.CONTENT_VERSION,
-                Long.toString(System.currentTimeMillis()),
-                nodeId,
-                clusterNodeAddress.getHost(),
-                Integer.toString(clusterNodeAddress.getPort()));
+    void parseClusterNodeFile_tooLong() {
+        final String clusterNodeFileString = encodeClusterNodeFileString(
+                ClusterNodeFile.CONTENT_VERSION + ClusterNodeFile.CONTENT_SEPARATOR + System.currentTimeMillis() +
+                        ClusterNodeFile.CONTENT_SEPARATOR + nodeId + ClusterNodeFile.CONTENT_SEPARATOR +
+                        clusterNodeAddress.getHost() + ClusterNodeFile.CONTENT_SEPARATOR +
+                        clusterNodeAddress.getPort() + ClusterNodeFile.CONTENT_SEPARATOR +
+                        clusterNodeAddress.getPort());
 
         final ClusterNodeFile clusterNodeFile = ClusterNodeFile.parseClusterNodeFile(clusterNodeFileString);
         assertNull(clusterNodeFile);
     }
 
     @Test
-    public void test_parseClusterNodeFile_null() {
+    void parseClusterNodeFile_null() {
         assertThrows(NullPointerException.class, () -> ClusterNodeFile.parseClusterNodeFile(null));
     }
 
     @Test
-    public void test_parseClusterNodeFile_blank() {
+    void parseClusterNodeFile_blank() {
         assertThrows(IllegalArgumentException.class, () -> ClusterNodeFile.parseClusterNodeFile("  "));
     }
 
     public static @NotNull String createClusterNodeFileString(
-            final String version,
-            final String timeInMillis,
-            final String nodeId,
-            final String host,
-            final String port) {
+            final @NotNull String version,
+            final @NotNull String timeInMillis,
+            final @NotNull String nodeId,
+            final @NotNull String host,
+            final @NotNull String port) {
+
         final String content =
                 version + ClusterNodeFile.CONTENT_SEPARATOR + timeInMillis + ClusterNodeFile.CONTENT_SEPARATOR +
-                        nodeId + ClusterNodeFile.CONTENT_SEPARATOR + host + ClusterNodeFile.CONTENT_SEPARATOR + port +
-                        ClusterNodeFile.CONTENT_SEPARATOR;
-
-        return new String(Base64.getEncoder().encode(content.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
+                        nodeId + ClusterNodeFile.CONTENT_SEPARATOR + host + ClusterNodeFile.CONTENT_SEPARATOR + port;
+        return encodeClusterNodeFileString(content);
     }
 
-    private static @NotNull String createClusterNodeFileStringTooLong(
-            final String version,
-            final String timeInMillis,
-            final String nodeId,
-            final String host,
-            final String port) {
-        final String content =
-                version + ClusterNodeFile.CONTENT_SEPARATOR + timeInMillis + ClusterNodeFile.CONTENT_SEPARATOR +
-                        nodeId + ClusterNodeFile.CONTENT_SEPARATOR + host + ClusterNodeFile.CONTENT_SEPARATOR + port +
-                        ClusterNodeFile.CONTENT_SEPARATOR + port + ClusterNodeFile.CONTENT_SEPARATOR;
-
-        return new String(Base64.getEncoder().encode(content.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
-    }
-
-    private static @NotNull String createClusterNodeFileStringTooShort(
-            final String version,
-            final String timeInMillis,
-            final String nodeId,
-            final String host,
-            final String port) {
-        final String content =
-                version + ClusterNodeFile.CONTENT_SEPARATOR + timeInMillis + ClusterNodeFile.CONTENT_SEPARATOR;
-
+    private static @NotNull String encodeClusterNodeFileString(final @NotNull String content) {
         return new String(Base64.getEncoder().encode(content.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
     }
 }

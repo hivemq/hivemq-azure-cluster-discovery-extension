@@ -1,4 +1,4 @@
-package com.hivemq.extensions.discovery.azure;/*
+/*
  * Copyright 2021-present HiveMQ GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,6 +13,8 @@ package com.hivemq.extensions.discovery.azure;/*
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+package com.hivemq.extensions.discovery.azure;
 
 import com.hivemq.extension.sdk.api.parameter.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -57,20 +59,20 @@ class AzureClusterDiscoveryExtensionMainTest {
     }
 
     @Test
-    public void test_start_success() {
+    void test_start_success() {
         azureClusterDiscoveryExtensionMain.extensionStart(extensionStartInput, extensionStartOutput);
         assertNotNull(azureClusterDiscoveryExtensionMain.azureClusterDiscoveryCallback);
     }
 
     @Test
-    public void test_start_failed() {
+    void test_start_failed() {
         when(extensionInformation.getExtensionHomeFolder()).thenThrow(new NullPointerException());
         azureClusterDiscoveryExtensionMain.extensionStart(extensionStartInput, extensionStartOutput);
         assertNull(azureClusterDiscoveryExtensionMain.azureClusterDiscoveryCallback);
     }
 
     @Test
-    public void test_stop_success() {
+    void test_stop_success() {
         assertThrows(RuntimeException.class, () -> {
             azureClusterDiscoveryExtensionMain.extensionStart(extensionStartInput, extensionStartOutput);
             azureClusterDiscoveryExtensionMain.extensionStop(extensionStopInput, extensionStopOutput);
@@ -78,7 +80,7 @@ class AzureClusterDiscoveryExtensionMainTest {
     }
 
     @Test
-    public void test_stop_no_start_failed() {
+    void test_stop_no_start_failed() {
         when(extensionInformation.getExtensionHomeFolder()).thenThrow(new NullPointerException());
         azureClusterDiscoveryExtensionMain.extensionStart(extensionStartInput, extensionStartOutput);
         azureClusterDiscoveryExtensionMain.extensionStop(extensionStopInput, extensionStopOutput);

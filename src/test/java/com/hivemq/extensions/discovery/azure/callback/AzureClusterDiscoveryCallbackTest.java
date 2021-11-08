@@ -16,16 +16,16 @@
 
 package com.hivemq.extensions.discovery.azure.callback;
 
-import com.hivemq.extensions.discovery.azure.client.AzureStorageClient;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.models.BlobItem;
 import com.hivemq.extension.sdk.api.parameter.ExtensionInformation;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryInput;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryOutput;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterNodeAddress;
+import com.hivemq.extensions.discovery.azure.client.AzureStorageClient;
+import com.hivemq.extensions.discovery.azure.config.AzureDiscoveryConfig;
 import com.hivemq.extensions.discovery.azure.config.ClusterNodeFileTest;
 import com.hivemq.extensions.discovery.azure.config.ConfigReader;
-import com.hivemq.extensions.discovery.azure.config.AzureDiscoveryConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -43,7 +43,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.mockito.Mockito.*;
 
-public class AzureClusterDiscoveryCallbackTest {
+class AzureClusterDiscoveryCallbackTest {
 
     @TempDir
     File temporaryFolder;
@@ -68,7 +68,7 @@ public class AzureClusterDiscoveryCallbackTest {
     private AzureDiscoveryConfig azAzureDiscoveryConfig;
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         MockitoAnnotations.openMocks(this);
 
         when(clusterDiscoveryInput.getOwnClusterId()).thenReturn("ABCD12");
@@ -98,10 +98,9 @@ public class AzureClusterDiscoveryCallbackTest {
     }
 
     @Test
-    public void test_init_success() {
+    void test_init_success() {
         when(azStorageClient.getBlobs(any())).thenReturn(createBlobItemIterator());
-        when(azStorageClient.getBlobContent(any())).thenReturn(ClusterNodeFileTest.createClusterNodeFileString(
-                "3",
+        when(azStorageClient.getBlobContent(any())).thenReturn(ClusterNodeFileTest.createClusterNodeFileString("3",
                 "3",
                 "3",
                 "3",
@@ -116,7 +115,7 @@ public class AzureClusterDiscoveryCallbackTest {
     }
 
     @Test
-    public void test_init_provide_current_nodes_exception_getting_node_files() {
+    void test_init_provide_current_nodes_exception_getting_node_files() {
         doThrow(RuntimeException.class).when(azStorageClient).getBlobs(any());
 
         azureClusterDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
@@ -128,7 +127,7 @@ public class AzureClusterDiscoveryCallbackTest {
     }
 
     @Test
-    public void test_init_provide_current_nodes_blobexception_getting_node_file() {
+    void test_init_provide_current_nodes_blobexception_getting_node_file() {
         when(azStorageClient.getBlobs(any())).thenReturn(createBlobItemIterator());
         doThrow(UncheckedIOException.class).when(azStorageClient).getBlobContent(any());
 
@@ -141,7 +140,7 @@ public class AzureClusterDiscoveryCallbackTest {
     }
 
     @Test
-    public void test_init_provide_current_nodes_exception_getting_node_file() {
+    void test_init_provide_current_nodes_exception_getting_node_file() {
         when(azStorageClient.getBlobs(any())).thenReturn(createBlobItemIterator());
         doThrow(UncheckedIOException.class).when(azStorageClient).getBlobContent(any());
 
@@ -154,8 +153,8 @@ public class AzureClusterDiscoveryCallbackTest {
     }
 
     @Test
-    public void test_init_provide_current_nodes_empty_blob_item_iterator() {
-        when(azStorageClient.getBlobs(any())).thenReturn(createEmptyBlobItemIterator());
+    void test_init_provide_current_nodes_empty_blob_item_iterator() {
+        when(azStorageClient.getBlobs(any())).thenReturn(Collections.emptyIterator());
 
         azureClusterDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
@@ -166,7 +165,7 @@ public class AzureClusterDiscoveryCallbackTest {
     }
 
     @Test
-    public void test_init_provide_current_nodes_expired_files() throws Exception {
+    void test_init_provide_current_nodes_expired_files() throws Exception {
         deleteFilesInTemporaryFolder();
 
         try (final PrintWriter printWriter = new PrintWriter(new File(temporaryFolder, ConfigReader.STORAGE_FILE))) {
@@ -180,8 +179,7 @@ public class AzureClusterDiscoveryCallbackTest {
         when(azStorageClient.getStorageConfig()).thenReturn(azureDiscoveryConfig);
 
         when(azStorageClient.getBlobs(any())).thenReturn(createBlobItemIterator());
-        when(azStorageClient.getBlobContent(any())).thenReturn(ClusterNodeFileTest.createClusterNodeFileString(
-                "3",
+        when(azStorageClient.getBlobContent(any())).thenReturn(ClusterNodeFileTest.createClusterNodeFileString("3",
                 "3",
                 "3",
                 "3",
@@ -199,7 +197,7 @@ public class AzureClusterDiscoveryCallbackTest {
     }
 
     @Test
-    public void test_init_provide_current_nodes_blob_null() {
+    void test_init_provide_current_nodes_blob_null() {
         when(azStorageClient.getBlobs(any())).thenReturn(createBlobItemIterator());
         when(azStorageClient.getBlobContent(any())).thenReturn(null);
 
@@ -212,7 +210,7 @@ public class AzureClusterDiscoveryCallbackTest {
     }
 
     @Test
-    public void test_init_provide_current_nodes_blob_content_blank() {
+    void test_init_provide_current_nodes_blob_content_blank() {
         when(azStorageClient.getBlobs(any())).thenReturn(createBlobItemIterator());
         when(azStorageClient.getBlobContent(any())).thenReturn(" ");
 
@@ -225,10 +223,9 @@ public class AzureClusterDiscoveryCallbackTest {
     }
 
     @Test
-    public void test_init_provide_current_nodes_parse_failed() {
+    void test_init_provide_current_nodes_parse_failed() {
         when(azStorageClient.getBlobs(any())).thenReturn(createBlobItemIterator());
-        when(azStorageClient.getBlobContent(any())).thenReturn(ClusterNodeFileTest.createClusterNodeFileString(
-                "3",
+        when(azStorageClient.getBlobContent(any())).thenReturn(ClusterNodeFileTest.createClusterNodeFileString("3",
                 "3",
                 "3",
                 "3",
@@ -243,7 +240,7 @@ public class AzureClusterDiscoveryCallbackTest {
     }
 
     @Test
-    public void test_init_save_own_file_failed() {
+    void test_init_save_own_file_failed() {
         doThrow(RuntimeException.class).when(azStorageClient).saveBlob(any(), any());
 
         azureClusterDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
@@ -255,7 +252,7 @@ public class AzureClusterDiscoveryCallbackTest {
     }
 
     @Test
-    public void test_init_container_does_not_exist_is_created() {
+    void test_init_container_does_not_exist_is_created() {
 
         when(azStorageClient.existsContainer()).thenReturn(false);
 
@@ -269,7 +266,7 @@ public class AzureClusterDiscoveryCallbackTest {
     }
 
     @Test
-    public void test_init_create_failed_config() {
+    void test_init_create_failed_config() {
 
         doThrow(new IllegalStateException("Config is not valid.")).when(azStorageClient).createOrUpdate();
 
@@ -282,7 +279,7 @@ public class AzureClusterDiscoveryCallbackTest {
     }
 
     @Test
-    public void test_init_container_created_success() {
+    void test_init_container_created_success() {
 
         when(azStorageClient.existsContainer()).thenReturn(false);
 
@@ -296,7 +293,7 @@ public class AzureClusterDiscoveryCallbackTest {
     }
 
     @Test
-    public void test_init_config_invalid() throws Exception {
+    void test_init_config_invalid() throws Exception {
 
         deleteFilesInTemporaryFolder();
 
@@ -318,7 +315,7 @@ public class AzureClusterDiscoveryCallbackTest {
     }
 
     @Test
-    public void test_init_no_config() {
+    void test_init_no_config() {
         temporaryFolder.delete();
 
         azureClusterDiscoveryCallback = new AzureClusterDiscoveryCallback(configurationReader);
@@ -328,7 +325,7 @@ public class AzureClusterDiscoveryCallbackTest {
     }
 
     @Test
-    public void test_reload_success_same_config() {
+    void test_reload_success_same_config() {
 
         azureClusterDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
         azureClusterDiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
@@ -337,7 +334,7 @@ public class AzureClusterDiscoveryCallbackTest {
     }
 
     @Test
-    public void test_reload_success_new_config() throws Exception {
+    void test_reload_success_new_config() throws Exception {
         azureClusterDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         deleteFilesInTemporaryFolder();
@@ -358,7 +355,7 @@ public class AzureClusterDiscoveryCallbackTest {
     }
 
     @Test
-    public void test_reload_new_config_missing_container_is_created() throws Exception {
+    void test_reload_new_config_missing_container_is_created() throws Exception {
         temporaryFolder.delete();
         azureClusterDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
         deleteFilesInTemporaryFolder();
@@ -380,7 +377,7 @@ public class AzureClusterDiscoveryCallbackTest {
     }
 
     @Test
-    public void test_reload_config_missing_init_success() {
+    void test_reload_config_missing_init_success() {
         azureClusterDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         deleteFilesInTemporaryFolder();
@@ -391,7 +388,7 @@ public class AzureClusterDiscoveryCallbackTest {
     }
 
     @Test
-    public void test_reload_config_still_missing() {
+    void test_reload_config_still_missing() {
         temporaryFolder.delete();
         when(azStorageClient.getStorageConfig()).thenReturn(null);
         doThrow(IllegalStateException.class).when(azStorageClient).createOrUpdate();
@@ -402,7 +399,7 @@ public class AzureClusterDiscoveryCallbackTest {
     }
 
     @Test
-    public void test_reload_file_expired() throws Exception {
+    void test_reload_file_expired() throws Exception {
         deleteFilesInTemporaryFolder();
 
         try (final PrintWriter printWriter = new PrintWriter(new File(temporaryFolder, ConfigReader.STORAGE_FILE))) {
@@ -427,7 +424,7 @@ public class AzureClusterDiscoveryCallbackTest {
     }
 
     @Test
-    public void test_reload_file_exception() throws Exception {
+    void test_reload_file_exception() throws Exception {
         deleteFilesInTemporaryFolder();
 
         try (final PrintWriter printWriter = new PrintWriter(new File(temporaryFolder, ConfigReader.STORAGE_FILE))) {
@@ -453,7 +450,7 @@ public class AzureClusterDiscoveryCallbackTest {
     }
 
     @Test
-    public void test_destroy_success() {
+    void test_destroy_success() {
         azureClusterDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
         azureClusterDiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
         azureClusterDiscoveryCallback.destroy(clusterDiscoveryInput);
@@ -462,18 +459,17 @@ public class AzureClusterDiscoveryCallbackTest {
     }
 
     @Test
-    public void test_destroy_no_own_file() {
+    void test_destroy_no_own_file() {
         azureClusterDiscoveryCallback.destroy(clusterDiscoveryInput);
         verify(azStorageClient, never()).deleteBlob(any());
     }
 
     @Test
-    public void test_destroy_delete_own_file_failed() {
+    void test_destroy_delete_own_file_failed() {
         azureClusterDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
         azureClusterDiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
 
-        when(azStorageClient.getBlobContent(any())).thenReturn(ClusterNodeFileTest.createClusterNodeFileString(
-                "3",
+        when(azStorageClient.getBlobContent(any())).thenReturn(ClusterNodeFileTest.createClusterNodeFileString("3",
                 "3",
                 "3",
                 "3",
@@ -498,9 +494,4 @@ public class AzureClusterDiscoveryCallbackTest {
         blobItem.setName("ABCD12");
         return List.of(blobItem).iterator();
     }
-
-    Iterator<BlobItem> createEmptyBlobItemIterator() {
-        return Collections.emptyIterator();
-    }
-
 }

@@ -36,10 +36,9 @@ import java.util.Arrays;
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 
-public class AzureStorageClientTest {
+class AzureStorageClientTest {
 
     @TempDir
     File temporaryFolder;
@@ -50,7 +49,7 @@ public class AzureStorageClientTest {
     private AzureStorageClient azStorageClient;
 
     @BeforeEach
-    public void setUp() throws IOException {
+    void setUp() throws IOException {
         MockitoAnnotations.openMocks(this);
         when(extensionInformation.getExtensionHomeFolder()).thenReturn(temporaryFolder);
 
@@ -68,14 +67,14 @@ public class AzureStorageClientTest {
     }
 
     @Test
-    public void test_create_successful() {
+    void test_create_successful() {
         azStorageClient.createOrUpdate();
         assertNotNull(azStorageClient.getStorageConfig());
         assertNotNull(azStorageClient.getContainerClient());
     }
 
     @Test
-    public void test_container_exists() {
+    void test_container_exists() {
         azStorageClient.createOrUpdate();
         final BlobContainerClient containerClient = Mockito.mock(BlobContainerClient.class);
         azStorageClient.setContainerClient(containerClient);
@@ -87,7 +86,7 @@ public class AzureStorageClientTest {
     }
 
     @Test
-    public void test_container_does_not_exist() {
+    void test_container_does_not_exist() {
         azStorageClient.createOrUpdate();
         final BlobContainerClient containerClient = Mockito.mock(BlobContainerClient.class);
         azStorageClient.setContainerClient(containerClient);
@@ -99,7 +98,7 @@ public class AzureStorageClientTest {
     }
 
     @Test
-    public void test_create_no_config_file() {
+    void test_create_no_config_file() {
         deleteFilesInTemporaryFolder();
         final ConfigReader configurationReader = new ConfigReader(extensionInformation);
         azStorageClient = new AzureStorageClient(configurationReader);
@@ -108,7 +107,7 @@ public class AzureStorageClientTest {
     }
 
     @Test
-    public void test_create_invalid_config() throws IOException {
+    void test_create_invalid_config() throws IOException {
         deleteFilesInTemporaryFolder();
         temporaryFolder.createNewFile();
         try (final PrintWriter printWriter = new PrintWriter(new File(temporaryFolder, ConfigReader.STORAGE_FILE))) {
@@ -125,7 +124,7 @@ public class AzureStorageClientTest {
     }
 
     @Test
-    public void test_saveBlob_success() {
+    void test_saveBlob_success() {
         final BlobClient blobClient = mock(BlobClient.class);
 
         azStorageClient.createOrUpdate();
@@ -141,7 +140,7 @@ public class AzureStorageClientTest {
     }
 
     @Test
-    public void test_getBlobContent_success() {
+    void test_getBlobContent_success() {
         final BlobClient blobClient = mock(BlobClient.class);
         azStorageClient.createOrUpdate();
 
@@ -161,7 +160,7 @@ public class AzureStorageClientTest {
     }
 
     @Test
-    public void test_deleteObject_success() {
+    void test_deleteObject_success() {
         final BlobClient blobClient = mock(BlobClient.class);
         azStorageClient.createOrUpdate();
 
@@ -173,5 +172,4 @@ public class AzureStorageClientTest {
         doNothing().when(blobClient).delete();
         azStorageClient.deleteBlob("abcd");
     }
-
 }
