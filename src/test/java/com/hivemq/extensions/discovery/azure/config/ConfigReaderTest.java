@@ -16,184 +16,171 @@
 
 package com.hivemq.extensions.discovery.azure.config;
 
+import com.hivemq.extension.sdk.api.annotations.NotNull;
 import com.hivemq.extension.sdk.api.parameter.ExtensionInformation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 
 import java.io.File;
-import java.io.PrintWriter;
+import java.nio.file.Files;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-public class ConfigReaderTest {
+class ConfigReaderTest {
 
-    @Mock
-    public ExtensionInformation extensionInformation;
-
-    @TempDir
-    File temporaryFolder;
+    private @NotNull ExtensionInformation extensionInformation;
 
     @BeforeEach
-    public void setUp() {
-        MockitoAnnotations.openMocks(this);
-        Mockito.when(extensionInformation.getExtensionHomeFolder()).thenReturn(temporaryFolder);
+    void setUp(final @TempDir @NotNull File tempDir) {
+        extensionInformation = mock(ExtensionInformation.class);
+        when(extensionInformation.getExtensionHomeFolder()).thenReturn(tempDir);
     }
 
     @Test
-    public void test_readConfiguration_no_file() {
+    void test_readConfiguration_no_file() {
         final ConfigReader configurationReader = new ConfigReader(extensionInformation);
         assertNull(configurationReader.readConfiguration());
     }
 
     @Test
-    public void test_readConfiguration_successful() throws Exception {
-        try (final PrintWriter printWriter = new PrintWriter(new File(temporaryFolder, ConfigReader.STORAGE_FILE))) {
-            printWriter.println("connection-string:https://my-connection-string");
-            printWriter.println("container-name:hivemq-blob-container");
-            printWriter.println("file-prefix:hivemq-cluster");
-            printWriter.println("file-expiration:360");
-            printWriter.println("update-interval:180");
-        }
+    void test_readConfiguration_successful() throws Exception {
+        Files.writeString(
+                extensionInformation.getExtensionHomeFolder().toPath().resolve(ConfigReader.STORAGE_FILE),
+                "connection-string:https://my-connection-string\n" + //
+                        "container-name:hivemq-blob-container\n" + //
+                        "file-prefix:hivemq-cluster\n" + //
+                        "file-expiration:360\n" + //
+                        "update-interval:180");
 
         final ConfigReader configurationReader = new ConfigReader(extensionInformation);
         assertNotNull(configurationReader.readConfiguration());
     }
 
     @Test
-    public void test_readConfiguration_missing_connection_string() throws Exception {
-
-        try (final PrintWriter printWriter = new PrintWriter(new File(temporaryFolder, ConfigReader.STORAGE_FILE))) {
-            printWriter.println("connection-string:");
-            printWriter.println("container-name:hivemq-blob-container");
-            printWriter.println("file-prefix:hivemq-cluster");
-            printWriter.println("file-expiration:360");
-            printWriter.println("update-interval:180");
-        }
-
-        final ConfigReader configurationReader = new ConfigReader(extensionInformation);
-        assertNull(configurationReader.readConfiguration());
-    }
-
-    @Test
-    public void test_readConfiguration_missing_container_name() throws Exception {
-
-        try (final PrintWriter printWriter = new PrintWriter(new File(temporaryFolder, ConfigReader.STORAGE_FILE))) {
-            printWriter.println("connection-string:https://my-connection-string");
-            printWriter.println("container-name:");
-            printWriter.println("file-prefix:hivemq-cluster");
-            printWriter.println("file-expiration:360");
-            printWriter.println("update-interval:180");
-        }
+    void test_readConfiguration_missing_connection_string() throws Exception {
+        Files.writeString(
+                extensionInformation.getExtensionHomeFolder().toPath().resolve(ConfigReader.STORAGE_FILE),
+                "connection-string:\n" +//
+                        "container-name:hivemq-blob-container\n" + //
+                        "file-prefix:hivemq-cluster\n" + //
+                        "file-expiration:360\n" + //
+                        "update-interval:180");
 
         final ConfigReader configurationReader = new ConfigReader(extensionInformation);
         assertNull(configurationReader.readConfiguration());
     }
 
     @Test
-    public void test_readConfiguration_both_intervals_zero_successful() throws Exception {
+    void test_readConfiguration_missing_container_name() throws Exception {
+        Files.writeString(
+                extensionInformation.getExtensionHomeFolder().toPath().resolve(ConfigReader.STORAGE_FILE),
+                "connection-string:https://my-connection-string\n" + //
+                        "container-name:\n" + //
+                        "file-prefix:hivemq-cluster\n" + //
+                        "file-expiration:360\n" + //
+                        "update-interval:180\n");
 
-        try (final PrintWriter printWriter = new PrintWriter(new File(temporaryFolder, ConfigReader.STORAGE_FILE))) {
-            printWriter.println("connection-string:https://my-connection-string");
-            printWriter.println("container-name:hivemq-blob-container");
-            printWriter.println("file-prefix:hivemq-cluster");
-            printWriter.println("file-expiration:0");
-            printWriter.println("update-interval:0");
-        }
+        final ConfigReader configurationReader = new ConfigReader(extensionInformation);
+        assertNull(configurationReader.readConfiguration());
+    }
+
+    @Test
+    void test_readConfiguration_both_intervals_zero_successful() throws Exception {
+        Files.writeString(
+                extensionInformation.getExtensionHomeFolder().toPath().resolve(ConfigReader.STORAGE_FILE),
+                "connection-string:https://my-connection-string\n" + //
+                        "container-name:hivemq-blob-container\n" + //
+                        "file-prefix:hivemq-cluster\n" + //
+                        "file-expiration:0\n" + //
+                        "update-interval:0\n");
 
         final ConfigReader configurationReader = new ConfigReader(extensionInformation);
         assertNotNull(configurationReader.readConfiguration());
     }
 
     @Test
-    public void test_readConfiguration_both_intervals_same_value() throws Exception {
-
-        try (final PrintWriter printWriter = new PrintWriter(new File(temporaryFolder, ConfigReader.STORAGE_FILE))) {
-            printWriter.println("connection-string:https://my-connection-string");
-            printWriter.println("container-name:hivemq-blob-container");
-            printWriter.println("file-prefix:hivemq-cluster");
-            printWriter.println("file-expiration:180");
-            printWriter.println("update-interval:180");
-        }
-
-        final ConfigReader configurationReader = new ConfigReader(extensionInformation);
-        assertNull(configurationReader.readConfiguration());
-    }
-
-    @Test
-    public void test_readConfiguration_update_interval_larger() throws Exception {
-
-        try (final PrintWriter printWriter = new PrintWriter(new File(temporaryFolder, ConfigReader.STORAGE_FILE))) {
-            printWriter.println("connection-string:https://my-connection-string");
-            printWriter.println("container-name:hivemq-blob-container");
-            printWriter.println("file-prefix:hivemq-cluster");
-            printWriter.println("file-expiration:100");
-            printWriter.println("update-interval:300");
-        }
+    void test_readConfiguration_both_intervals_same_value() throws Exception {
+        Files.writeString(
+                extensionInformation.getExtensionHomeFolder().toPath().resolve(ConfigReader.STORAGE_FILE),
+                "connection-string:https://my-connection-string\n" + //
+                        "container-name:hivemq-blob-container\n" + //
+                        "file-prefix:hivemq-cluster\n" + //
+                        "file-expiration:180\n" + //
+                        "update-interval:180\n");
 
         final ConfigReader configurationReader = new ConfigReader(extensionInformation);
         assertNull(configurationReader.readConfiguration());
     }
 
     @Test
-    public void test_readConfiguration_update_deactivated() throws Exception {
-
-        try (final PrintWriter printWriter = new PrintWriter(new File(temporaryFolder, ConfigReader.STORAGE_FILE))) {
-            printWriter.println("connection-string:https://my-connection-string");
-            printWriter.println("container-name:hivemq-blob-container");
-            printWriter.println("file-prefix:hivemq-cluster");
-            printWriter.println("file-expiration:360");
-            printWriter.println("update-interval:0");
-        }
-
-        final ConfigReader configurationReader = new ConfigReader(extensionInformation);
-        assertNull(configurationReader.readConfiguration());
-    }
-
-    @Test
-    public void test_readConfiguration_expiration_deactivated() throws Exception {
-
-        try (final PrintWriter printWriter = new PrintWriter(new File(temporaryFolder, ConfigReader.STORAGE_FILE))) {
-            printWriter.println("connection-string:https://my-connection-string");
-            printWriter.println("container-name:hivemq-blob-container");
-            printWriter.println("file-prefix:hivemq-cluster");
-            printWriter.println("file-expiration:0");
-            printWriter.println("update-interval:180");
-        }
+    void test_readConfiguration_update_interval_larger() throws Exception {
+        Files.writeString(
+                extensionInformation.getExtensionHomeFolder().toPath().resolve(ConfigReader.STORAGE_FILE),
+                "connection-string:https://my-connection-string\n" + //
+                        "container-name:hivemq-blob-container\n" + //
+                        "file-prefix:hivemq-cluster\n" + //
+                        "file-expiration:100\n" + //
+                        "update-interval:300\n");
 
         final ConfigReader configurationReader = new ConfigReader(extensionInformation);
         assertNull(configurationReader.readConfiguration());
     }
 
     @Test
-    public void test_readConfiguration_missing_expiration() throws Exception {
-
-        try (final PrintWriter printWriter = new PrintWriter(new File(temporaryFolder, ConfigReader.STORAGE_FILE))) {
-            printWriter.println("connection-string:https://my-connection-string");
-            printWriter.println("container-name:hivemq-blob-container");
-            printWriter.println("file-prefix:hivemq-cluster");
-            printWriter.println("file-expiration:");
-            printWriter.println("update-interval:180");
-        }
+    void test_readConfiguration_update_deactivated() throws Exception {
+        Files.writeString(
+                extensionInformation.getExtensionHomeFolder().toPath().resolve(ConfigReader.STORAGE_FILE),
+                "connection-string:https://my-connection-string\n" + //
+                        "container-name:hivemq-blob-container\n" + //
+                        "file-prefix:hivemq-cluster\n" + //
+                        "file-expiration:360\n" + //
+                        "update-interval:0\n");
 
         final ConfigReader configurationReader = new ConfigReader(extensionInformation);
         assertNull(configurationReader.readConfiguration());
     }
 
     @Test
-    public void test_readConfiguration_missing_update() throws Exception {
+    void test_readConfiguration_expiration_deactivated() throws Exception {
+        Files.writeString(
+                extensionInformation.getExtensionHomeFolder().toPath().resolve(ConfigReader.STORAGE_FILE),
+                "connection-string:https://my-connection-string\n" + //
+                        "container-name:hivemq-blob-container\n" + //
+                        "file-prefix:hivemq-cluster\n" + //
+                        "file-expiration:0\n" + //
+                        "update-interval:180\n");
 
-        try (final PrintWriter printWriter = new PrintWriter(new File(temporaryFolder, ConfigReader.STORAGE_FILE))) {
-            printWriter.println("connection-string:https://my-connection-string");
-            printWriter.println("container-name:hivemq-blob-container");
-            printWriter.println("file-prefix:hivemq-cluster");
-            printWriter.println("file-expiration:360");
-            printWriter.println("update-interval:");
-        }
+        final ConfigReader configurationReader = new ConfigReader(extensionInformation);
+        assertNull(configurationReader.readConfiguration());
+    }
+
+    @Test
+    void test_readConfiguration_missing_expiration() throws Exception {
+        Files.writeString(
+                extensionInformation.getExtensionHomeFolder().toPath().resolve(ConfigReader.STORAGE_FILE),
+                "connection-string:https://my-connection-string\n" + //
+                        "container-name:hivemq-blob-container\n" + //
+                        "file-prefix:hivemq-cluster\n" + //
+                        "file-expiration:\n" + //
+                        "update-interval:180\n");
+
+        final ConfigReader configurationReader = new ConfigReader(extensionInformation);
+        assertNull(configurationReader.readConfiguration());
+    }
+
+    @Test
+    void test_readConfiguration_missing_update() throws Exception {
+        Files.writeString(
+                extensionInformation.getExtensionHomeFolder().toPath().resolve(ConfigReader.STORAGE_FILE),
+                "connection-string:https://my-connection-string\n" + //
+                        "container-name:hivemq-blob-container\n" + //
+                        "file-prefix:hivemq-cluster\n" + //
+                        "file-expiration:360\n" + //
+                        "update-interval:\n");
 
         final ConfigReader configurationReader = new ConfigReader(extensionInformation);
         assertNull(configurationReader.readConfiguration());
