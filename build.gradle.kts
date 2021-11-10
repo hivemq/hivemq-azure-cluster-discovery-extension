@@ -36,10 +36,6 @@ dependencies {
 
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
-
-    testLogging {
-        events("STARTED", "FAILED", "SKIPPED")
-    }
 }
 
 /* ******************** integration test ******************** */
