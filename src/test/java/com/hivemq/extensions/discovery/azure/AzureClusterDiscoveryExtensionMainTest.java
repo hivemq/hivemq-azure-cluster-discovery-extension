@@ -16,43 +16,38 @@
 
 package com.hivemq.extensions.discovery.azure;
 
+import com.hivemq.extension.sdk.api.annotations.NotNull;
 import com.hivemq.extension.sdk.api.parameter.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 import java.io.File;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class AzureClusterDiscoveryExtensionMainTest {
 
     @TempDir
-    File temporaryFolder;
+    @NotNull File temporaryFolder;
 
-    @Mock
-    ExtensionStartInput extensionStartInput;
-
-    @Mock
-    ExtensionStartOutput extensionStartOutput;
-
-    @Mock
-    ExtensionStopInput extensionStopInput;
-
-    @Mock
-    ExtensionStopOutput extensionStopOutput;
-
-    @Mock
-    ExtensionInformation extensionInformation;
-
-    private AzureClusterDiscoveryExtensionMain azureClusterDiscoveryExtensionMain;
+    private @NotNull ExtensionStartInput extensionStartInput;
+    private @NotNull ExtensionStartOutput extensionStartOutput;
+    private @NotNull ExtensionStopInput extensionStopInput;
+    private @NotNull ExtensionStopOutput extensionStopOutput;
+    private @NotNull ExtensionInformation extensionInformation;
+    private @NotNull AzureClusterDiscoveryExtensionMain azureClusterDiscoveryExtensionMain;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+        extensionStartInput = mock(ExtensionStartInput.class);
+        extensionStartOutput = mock(ExtensionStartOutput.class);
+        extensionStopInput = mock(ExtensionStopInput.class);
+        extensionStopOutput = mock(ExtensionStopOutput.class);
+        extensionInformation = mock(ExtensionInformation.class);
+
         when(extensionStartInput.getExtensionInformation()).thenReturn(extensionInformation);
         when(extensionInformation.getExtensionHomeFolder()).thenReturn(temporaryFolder);
         azureClusterDiscoveryExtensionMain = new AzureClusterDiscoveryExtensionMain();

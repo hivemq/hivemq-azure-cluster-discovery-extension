@@ -21,7 +21,6 @@ import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobContainerClientBuilder;
 import com.azure.storage.blob.models.BlobItem;
 import com.hivemq.extension.sdk.api.annotations.NotNull;
-import com.hivemq.testcontainer.junit5.HiveMQTestContainerExtension;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,8 +28,8 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.ToxiproxyContainer;
 import org.testcontainers.containers.output.WaitingConsumer;
+import org.testcontainers.hivemq.HiveMQContainer;
 import org.testcontainers.images.builder.Transferable;
-import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 import java.io.ByteArrayInputStream;
@@ -41,27 +40,24 @@ import java.util.List;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
+import static com.hivemq.extensions.discovery.azure.DockerImageNames.*;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.*;
 
+@SuppressWarnings("resource")
 class AzureDiscoveryExtensionIT {
 
-    private static final @NotNull DockerImageName AZURITE_IMAGE =
-            DockerImageName.parse("mcr.microsoft.com/azure-storage/azurite:3.14.3");
     private static final @NotNull String AZURITE_NETWORK_ALIAS = "azurite";
-    private final static int AZURITE_PORT = 10000;
-
-    private static final @NotNull DockerImageName TOXIPROXY_IMAGE = DockerImageName.parse("shopify/toxiproxy:2.1.0");
+    private static final int AZURITE_PORT = 10000;
     private static final @NotNull String TOXIPROXY_NETWORK_ALIAS = "toxiproxy";
-
     private static final @NotNull String BLOB_CONTAINER_NAME = "hivemq-discovery";
 
     private final @NotNull Network network = Network.newNetwork();
-    private final @NotNull GenericContainer<?> azureriteContainer =
-            new GenericContainer<>(AZURITE_IMAGE).withExposedPorts(AZURITE_PORT)
-                    .withNetwork(network)
-                    .withNetworkAliases(AZURITE_NETWORK_ALIAS);
+    private final @NotNull GenericContainer<?> azureriteContainer = new GenericContainer<>(AZURITE_IMAGE) //
+            .withExposedPorts(AZURITE_PORT) //
+            .withNetwork(network) //
+            .withNetworkAliases(AZURITE_NETWORK_ALIAS);
 
     @BeforeEach
     void setUp() {
@@ -80,9 +76,9 @@ class AzureDiscoveryExtensionIT {
         final WaitingConsumer consumer2 = new WaitingConsumer();
         final WaitingConsumer consumer3 = new WaitingConsumer();
 
-        final HiveMQTestContainerExtension node1 = createHiveMQNode().withLogConsumer(consumer1);
-        final HiveMQTestContainerExtension node2 = createHiveMQNode().withLogConsumer(consumer2);
-        final HiveMQTestContainerExtension node3 = createHiveMQNode().withLogConsumer(consumer3);
+        final HiveMQContainer node1 = createHiveMQNode().withLogConsumer(consumer1);
+        final HiveMQContainer node2 = createHiveMQNode().withLogConsumer(consumer2);
+        final HiveMQContainer node3 = createHiveMQNode().withLogConsumer(consumer3);
 
         try (node1; node2; node3) {
             node1.start();
@@ -101,9 +97,9 @@ class AzureDiscoveryExtensionIT {
         final WaitingConsumer consumer2 = new WaitingConsumer();
         final WaitingConsumer consumer3 = new WaitingConsumer();
 
-        final HiveMQTestContainerExtension node1 = createHiveMQNode().withLogConsumer(consumer1);
-        final HiveMQTestContainerExtension node2 = createHiveMQNode().withLogConsumer(consumer2);
-        final HiveMQTestContainerExtension node3 = createHiveMQNode().withLogConsumer(consumer3);
+        final HiveMQContainer node1 = createHiveMQNode().withLogConsumer(consumer1);
+        final HiveMQContainer node2 = createHiveMQNode().withLogConsumer(consumer2);
+        final HiveMQContainer node3 = createHiveMQNode().withLogConsumer(consumer3);
 
         try (node1; node2; node3) {
             node1.start();
@@ -120,21 +116,19 @@ class AzureDiscoveryExtensionIT {
 
     @Test
     void twoNodesInCluster_oneNodeCannotReachAzure_nodeFileDeleted() throws IOException, TimeoutException {
-        final ToxiproxyContainer toxiproxy = new ToxiproxyContainer(TOXIPROXY_IMAGE).withNetwork(network)
-                .withNetworkAliases(TOXIPROXY_NETWORK_ALIAS);
+        final ToxiproxyContainer toxiproxy = new ToxiproxyContainer(TOXIPROXY_IMAGE).withNetwork(network).withNetworkAliases(TOXIPROXY_NETWORK_ALIAS);
         try (toxiproxy) {
             toxiproxy.start();
 
             final ToxiproxyContainer.ContainerProxy proxy = toxiproxy.getProxy(azureriteContainer, AZURITE_PORT);
-            final String toxiproxyConnectionString =
-                    createAzuriteConnectionString(TOXIPROXY_NETWORK_ALIAS, proxy.getOriginalProxyPort());
+            final String toxiproxyConnectionString = createAzuriteConnectionString(TOXIPROXY_NETWORK_ALIAS, proxy.getOriginalProxyPort());
 
             final WaitingConsumer toxicConsumer = new WaitingConsumer();
             final WaitingConsumer normalConsumer = new WaitingConsumer();
 
-            final HiveMQTestContainerExtension toxicNode =
+            final HiveMQContainer toxicNode =
                     createHiveMQNode(toxiproxyConnectionString).withLogConsumer(toxicConsumer);
-            final HiveMQTestContainerExtension normalNode = createHiveMQNode().withLogConsumer(normalConsumer);
+            final HiveMQContainer normalNode = createHiveMQNode().withLogConsumer(normalConsumer);
 
             try (toxicNode; normalNode) {
                 toxicNode.start();
@@ -145,14 +139,11 @@ class AzureDiscoveryExtensionIT {
 
                 proxy.setConnectionCut(true); // toxicNode now cannot update its node file
 
-                final BlobContainerClient blobContainerClient =
-                        new BlobContainerClientBuilder().connectionString(createHostAzuriteConnectionString())
-                                .containerName(BLOB_CONTAINER_NAME)
-                                .buildClient();
+                final BlobContainerClient blobContainerClient = new BlobContainerClientBuilder().connectionString(createHostAzuriteConnectionString())
+                        .containerName(BLOB_CONTAINER_NAME)
+                        .buildClient();
 
-                await().pollInterval(1, SECONDS)
-                        .atMost(60, SECONDS)
-                        .until(() -> blobContainerClient.listBlobs().stream().count() == 1);
+                await().pollInterval(1, SECONDS).atMost(60, SECONDS).until(() -> blobContainerClient.listBlobs().stream().count() == 1);
             }
         }
     }
@@ -163,9 +154,9 @@ class AzureDiscoveryExtensionIT {
         final WaitingConsumer consumer2 = new WaitingConsumer();
         final WaitingConsumer consumer3 = new WaitingConsumer();
 
-        final HiveMQTestContainerExtension node1 = createHiveMQNode().withLogConsumer(consumer1);
-        final HiveMQTestContainerExtension node2 = createHiveMQNode().withLogConsumer(consumer2);
-        final HiveMQTestContainerExtension node3 = createHiveMQNode().withLogConsumer(consumer3);
+        final HiveMQContainer node1 = createHiveMQNode().withLogConsumer(consumer1);
+        final HiveMQContainer node2 = createHiveMQNode().withLogConsumer(consumer2);
+        final HiveMQContainer node3 = createHiveMQNode().withLogConsumer(consumer3);
 
         try (node1; node2; node3) {
             node1.start();
@@ -181,10 +172,9 @@ class AzureDiscoveryExtensionIT {
             consumer1.waitUntil(frame -> frame.getUtf8String().contains("Cluster size = 2"), 30, SECONDS, 2);
             consumer2.waitUntil(frame -> frame.getUtf8String().contains("Cluster size = 2"), 30, SECONDS, 2);
 
-            final BlobContainerClient blobContainerClient =
-                    new BlobContainerClientBuilder().connectionString(createHostAzuriteConnectionString())
-                            .containerName(BLOB_CONTAINER_NAME)
-                            .buildClient();
+            final BlobContainerClient blobContainerClient = new BlobContainerClientBuilder().connectionString(createHostAzuriteConnectionString())
+                    .containerName(BLOB_CONTAINER_NAME)
+                    .buildClient();
 
             final List<BlobItem> blobs = blobContainerClient.listBlobs().stream().collect(Collectors.toList());
 
@@ -194,7 +184,6 @@ class AzureDiscoveryExtensionIT {
 
     @Test
     void wrongConnectionString_reloadRightConnectionString_clusterCreated() throws IOException, TimeoutException {
-
         final String wrongConnectionString = "DefaultEndpointsProtocol=http;" + //
                 "AccountName=devstoreaccount1;" +
                 "AccountKey=XXX8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;" +
@@ -202,9 +191,8 @@ class AzureDiscoveryExtensionIT {
 
         final WaitingConsumer consumer = new WaitingConsumer();
 
-        final HiveMQTestContainerExtension reloadingNode =
-                createHiveMQNode(wrongConnectionString).withLogConsumer(consumer);
-        final HiveMQTestContainerExtension normalNode = createHiveMQNode();
+        final HiveMQContainer reloadingNode = createHiveMQNode(wrongConnectionString).withLogConsumer(consumer);
+        final HiveMQContainer normalNode = createHiveMQNode();
 
         try (reloadingNode; normalNode) {
             reloadingNode.start();
@@ -220,14 +208,13 @@ class AzureDiscoveryExtensionIT {
 
     @Test
     void containerNotExisting_nodeStarted_containerCreated() throws IOException {
-        final BlobContainerClient blobContainerClient =
-                new BlobContainerClientBuilder().connectionString(createHostAzuriteConnectionString())
-                        .containerName(BLOB_CONTAINER_NAME)
-                        .buildClient();
+        final BlobContainerClient blobContainerClient = new BlobContainerClientBuilder().connectionString(createHostAzuriteConnectionString())
+                .containerName(BLOB_CONTAINER_NAME)
+                .buildClient();
 
         assertFalse(blobContainerClient.exists());
 
-        final HiveMQTestContainerExtension node = createHiveMQNode();
+        final HiveMQContainer node = createHiveMQNode();
 
         try (node) {
             node.start();
@@ -238,17 +225,16 @@ class AzureDiscoveryExtensionIT {
 
     @Test
     void containerExisting_nodeStarted_containerUsed() throws IOException {
-        final BlobContainerClient blobContainerClient =
-                new BlobContainerClientBuilder().connectionString(createHostAzuriteConnectionString())
-                        .containerName(BLOB_CONTAINER_NAME)
-                        .buildClient();
+        final BlobContainerClient blobContainerClient = new BlobContainerClientBuilder().connectionString(createHostAzuriteConnectionString())
+                .containerName(BLOB_CONTAINER_NAME)
+                .buildClient();
         final BlobClient blob = blobContainerClient.getBlobClient("blob");
         blobContainerClient.create();
         blob.upload(new ByteArrayInputStream("Test".getBytes()), "Test".getBytes().length);
 
         final WaitingConsumer consumer = new WaitingConsumer();
 
-        final HiveMQTestContainerExtension node = createHiveMQNode().withLogConsumer(consumer);
+        final HiveMQContainer node = createHiveMQNode().withLogConsumer(consumer);
 
         try (node) {
             node.start();
@@ -258,24 +244,18 @@ class AzureDiscoveryExtensionIT {
         }
     }
 
-    /* Helpers */
-
-    private static @NotNull String createAzuriteConnectionString(final @NotNull String host, final int port) {
+    private @NotNull String createAzuriteConnectionString(final @NotNull String host, final int port) {
         return "DefaultEndpointsProtocol=http;" + //
                 "AccountName=devstoreaccount1;" +
                 "AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;" +
                 "BlobEndpoint=http://" + host + ":" + port + "/devstoreaccount1";
     }
 
-    private static @NotNull String createDockerAzuriteConnectionString() {
+    private @NotNull String createDockerAzuriteConnectionString() {
         return createAzuriteConnectionString(AZURITE_NETWORK_ALIAS, AZURITE_PORT);
     }
 
-    private @NotNull String createHostAzuriteConnectionString() {
-        return createAzuriteConnectionString("127.0.0.1", azureriteContainer.getMappedPort(AZURITE_PORT));
-    }
-
-    private static @NotNull String createConfig(final @NotNull String connectionString) {
+    private @NotNull String createConfig(final @NotNull String connectionString) {
         return "connection-string=" + connectionString + '\n' + //
                 "container-name=" + BLOB_CONTAINER_NAME + '\n' + //
                 "file-prefix=hivemq-node-\n" + //
@@ -283,13 +263,16 @@ class AzureDiscoveryExtensionIT {
                 "update-interval=5";
     }
 
-    private @NotNull HiveMQTestContainerExtension createHiveMQNode(final @NotNull String connectionString)
-            throws IOException {
+    private @NotNull String createHostAzuriteConnectionString() {
+        return createAzuriteConnectionString("127.0.0.1", azureriteContainer.getMappedPort(AZURITE_PORT));
+    }
+
+    private @NotNull HiveMQContainer createHiveMQNode(final @NotNull String connectionString) throws IOException {
 
         final Path configFile = Files.createTempDirectory("az-extension-test").resolve("azDiscovery.properties");
         Files.writeString(configFile, createConfig(connectionString));
 
-        return new HiveMQTestContainerExtension(DockerImageName.parse("hivemq/hivemq4").withTag("latest")) //
+        return new HiveMQContainer(HIVEMQ_IMAGE) //
                 .withHiveMQConfig(MountableFile.forClasspathResource("config.xml"))
                 .withExtension(MountableFile.forClasspathResource("hivemq-azure-cluster-discovery-extension"))
                 .withFileInExtensionHomeFolder(MountableFile.forHostPath(configFile),
@@ -297,7 +280,7 @@ class AzureDiscoveryExtensionIT {
                 .withNetwork(network);
     }
 
-    private @NotNull HiveMQTestContainerExtension createHiveMQNode() throws IOException {
+    private @NotNull HiveMQContainer createHiveMQNode() throws IOException {
         return createHiveMQNode(createDockerAzuriteConnectionString());
     }
 }

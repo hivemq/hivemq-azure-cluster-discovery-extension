@@ -31,6 +31,23 @@ public class ClusterNodeFileTest {
     private final @NotNull String nodeId = "ABCD12";
     private final @NotNull ClusterNodeAddress clusterNodeAddress = new ClusterNodeAddress("127.0.0.1", 7800);
 
+    public static @NotNull String createClusterNodeFileString(
+            final @NotNull String version,
+            final @NotNull String timeInMillis,
+            final @NotNull String nodeId,
+            final @NotNull String host,
+            final @NotNull String port) {
+
+        final String content =
+                version + ClusterNodeFile.CONTENT_SEPARATOR + timeInMillis + ClusterNodeFile.CONTENT_SEPARATOR +
+                        nodeId + ClusterNodeFile.CONTENT_SEPARATOR + host + ClusterNodeFile.CONTENT_SEPARATOR + port;
+        return encodeClusterNodeFileString(content);
+    }
+
+    private static @NotNull String encodeClusterNodeFileString(final @NotNull String content) {
+        return new String(Base64.getEncoder().encode(content.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
+    }
+
     @Test
     void getClusterId() {
         final ClusterNodeFile clusterNodeFile = new ClusterNodeFile(nodeId, clusterNodeAddress);
@@ -209,22 +226,5 @@ public class ClusterNodeFileTest {
     @Test
     void parseClusterNodeFile_blank() {
         assertThrows(IllegalArgumentException.class, () -> ClusterNodeFile.parseClusterNodeFile("  "));
-    }
-
-    public static @NotNull String createClusterNodeFileString(
-            final @NotNull String version,
-            final @NotNull String timeInMillis,
-            final @NotNull String nodeId,
-            final @NotNull String host,
-            final @NotNull String port) {
-
-        final String content =
-                version + ClusterNodeFile.CONTENT_SEPARATOR + timeInMillis + ClusterNodeFile.CONTENT_SEPARATOR +
-                        nodeId + ClusterNodeFile.CONTENT_SEPARATOR + host + ClusterNodeFile.CONTENT_SEPARATOR + port;
-        return encodeClusterNodeFileString(content);
-    }
-
-    private static @NotNull String encodeClusterNodeFileString(final @NotNull String content) {
-        return new String(Base64.getEncoder().encode(content.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
     }
 }

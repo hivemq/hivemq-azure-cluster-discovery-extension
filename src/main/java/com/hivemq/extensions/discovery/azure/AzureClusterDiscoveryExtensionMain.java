@@ -18,6 +18,7 @@ package com.hivemq.extensions.discovery.azure;
 
 import com.hivemq.extension.sdk.api.ExtensionMain;
 import com.hivemq.extension.sdk.api.annotations.NotNull;
+import com.hivemq.extension.sdk.api.annotations.Nullable;
 import com.hivemq.extension.sdk.api.parameter.ExtensionStartInput;
 import com.hivemq.extension.sdk.api.parameter.ExtensionStartOutput;
 import com.hivemq.extension.sdk.api.parameter.ExtensionStopInput;
@@ -33,9 +34,9 @@ import org.slf4j.LoggerFactory;
  */
 public class AzureClusterDiscoveryExtensionMain implements ExtensionMain {
 
-    private static final Logger logger = LoggerFactory.getLogger(AzureClusterDiscoveryExtensionMain.class);
+    private static final @NotNull Logger logger = LoggerFactory.getLogger(AzureClusterDiscoveryExtensionMain.class);
 
-    AzureClusterDiscoveryCallback azureClusterDiscoveryCallback;
+    @Nullable AzureClusterDiscoveryCallback azureClusterDiscoveryCallback;
 
     @Override
     public void extensionStart(

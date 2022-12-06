@@ -41,7 +41,7 @@ import java.util.Iterator;
  */
 public class AzureStorageClient {
 
-    private static final Logger log = LoggerFactory.getLogger(AzureStorageClient.class);
+    private static final @NotNull Logger log = LoggerFactory.getLogger(AzureStorageClient.class);
 
     private final @NotNull ConfigReader configReader;
     private @Nullable BlobContainerClient containerClient;
@@ -56,13 +56,13 @@ public class AzureStorageClient {
         final AzureDiscoveryConfig newAzureDiscoveryConfig = configReader.readConfiguration();
         if (newAzureDiscoveryConfig == null) {
             if (azureDiscoveryConfig != null) {
-                log.warn("Configuration of the Azure Cluster Discovery Extension couldn't be loaded. Using last valid configuration.");
+                log.warn(
+                        "Configuration of the Azure Cluster Discovery Extension couldn't be loaded. Using last valid configuration.");
+            } else {
+                throw new IllegalStateException(
+                        "Configuration of the Azure Cluster Discovery Extension couldn't be loaded.");
             }
-            else {
-                throw new IllegalStateException("Configuration of the Azure Cluster Discovery Extension couldn't be loaded.");
-            }
-        }
-        else {
+        } else {
             azureDiscoveryConfig = newAzureDiscoveryConfig;
         }
 
@@ -82,17 +82,19 @@ public class AzureStorageClient {
             return containerClient.exists();
         } catch (final BlobStorageException blobStorageException) {
             throw new RuntimeException("Azure Storage Container existence check failed with status code " +
-                    blobStorageException.getStatusCode() + " and error code " + blobStorageException.getErrorCode() + ".");
+                    blobStorageException.getStatusCode() + " and error code " + blobStorageException.getErrorCode() +
+                    ".");
         }
     }
 
     public void createContainer() throws RuntimeException {
         try {
             containerClient.create();
-            log.trace("Created container {} in Azure Storage Account {}.",
+            log.trace(
+                    "Created container {} in Azure Storage Account {}.",
                     containerClient.getBlobContainerName(),
                     containerClient.getAccountName());
-        } catch (BlobStorageException error) {
+        } catch (final BlobStorageException error) {
             if (error.getErrorCode().equals(BlobErrorCode.CONTAINER_ALREADY_EXISTS)) {
                 log.debug(
                         "Cannot create container {} in Azure Storage Account because the container already exists.",
@@ -123,23 +125,20 @@ public class AzureStorageClient {
 
         try {
             blob.delete();
-        }
-        catch (final BlobStorageException blobStorageException) {
+        } catch (final BlobStorageException blobStorageException) {
             throw new RuntimeException(
                     "Azure Storage Blob delete failed with status code " + blobStorageException.getStatusCode() +
                             " and error code " + blobStorageException.getErrorCode() + ".");
         }
     }
 
-    @NotNull
-    public String getBlobContent(final @NotNull String blobName) throws RuntimeException {
+    public @NotNull String getBlobContent(final @NotNull String blobName) throws RuntimeException {
         final BlobClient blobClient = containerClient.getBlobClient(blobName);
         final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
         try {
             blobClient.download(outputStream);
-        }
-        catch (final BlobStorageException blobStorageException) {
+        } catch (final BlobStorageException blobStorageException) {
             throw new RuntimeException(
                     "Azure Storage Blob download failed with status code " + blobStorageException.getStatusCode() +
                             " and error code " + blobStorageException.getErrorCode() + ".");
@@ -148,8 +147,7 @@ public class AzureStorageClient {
         return outputStream.toString();
     }
 
-    @NotNull
-    public Iterator<BlobItem> getBlobs(final @NotNull String filePrefix) throws RuntimeException {
+    public @NotNull Iterator<BlobItem> getBlobs(final @NotNull String filePrefix) throws RuntimeException {
 
         try {
             return containerClient.listBlobs(new ListBlobsOptions().setPrefix(filePrefix), null).iterator();
@@ -160,11 +158,17 @@ public class AzureStorageClient {
         }
     }
 
-    public @Nullable AzureDiscoveryConfig getStorageConfig() { return azureDiscoveryConfig; }
+    public @Nullable AzureDiscoveryConfig getStorageConfig() {
+        return azureDiscoveryConfig;
+    }
 
-    public @Nullable ConfigReader getConfigReader() { return configReader; }
+    public @NotNull ConfigReader getConfigReader() {
+        return configReader;
+    }
 
-    public @Nullable BlobContainerClient getContainerClient() { return containerClient; }
+    public @Nullable BlobContainerClient getContainerClient() {
+        return containerClient;
+    }
 
     void setContainerClient(final @NotNull BlobContainerClient containerClient) {
         this.containerClient = containerClient;
