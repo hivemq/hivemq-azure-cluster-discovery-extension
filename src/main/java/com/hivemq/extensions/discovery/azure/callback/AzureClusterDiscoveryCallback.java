@@ -42,13 +42,17 @@ import static com.hivemq.extensions.discovery.azure.util.StringUtil.isNullOrBlan
  */
 public class AzureClusterDiscoveryCallback implements ClusterDiscoveryCallback {
 
-    private static final Logger log = LoggerFactory.getLogger(AzureClusterDiscoveryCallback.class);
+    private static final @NotNull Logger log = LoggerFactory.getLogger(AzureClusterDiscoveryCallback.class);
 
-    private @Nullable AzureStorageClient azureStorageClient;
+    private final @NotNull AzureStorageClient azureStorageClient;
     private @Nullable ClusterNodeFile ownNodeFile;
 
     public AzureClusterDiscoveryCallback(final @NotNull ConfigReader configReader) {
         azureStorageClient = new AzureStorageClient(configReader);
+    }
+
+    AzureClusterDiscoveryCallback(final @NotNull AzureStorageClient azureStorageClient) {
+        this.azureStorageClient = azureStorageClient;
     }
 
     @Override
@@ -63,7 +67,8 @@ public class AzureClusterDiscoveryCallback implements ClusterDiscoveryCallback {
         try {
             azureStorageClient.createOrUpdate();
         } catch (final IllegalStateException | IllegalArgumentException ex) {
-            log.warn("Initialization of the Azure Cluster Discovery Callback failed. {}", getRootCause(ex).getMessage());
+            log.warn("Initialization of the Azure Cluster Discovery Callback failed. {}",
+                    getRootCause(ex).getMessage());
             return;
         }
 
@@ -72,8 +77,7 @@ public class AzureClusterDiscoveryCallback implements ClusterDiscoveryCallback {
 
         try {
             if (!azureStorageClient.existsContainer()) {
-                log.info(
-                        "Azure Blob Storage Container {} doesn't exist. Creating it.",
+                log.info("Azure Blob Storage Container {} doesn't exist. Creating it.",
                         azureStorageClient.getStorageConfig().getContainerName());
                 azureStorageClient.createContainer();
             }
@@ -81,7 +85,8 @@ public class AzureClusterDiscoveryCallback implements ClusterDiscoveryCallback {
             saveOwnFile(clusterDiscoveryInput.getOwnClusterId(), clusterDiscoveryInput.getOwnAddress());
             clusterDiscoveryOutput.provideCurrentNodes(getNodeAddresses());
         } catch (final Exception ex) {
-            log.warn("Initialization of the Azure Cluster Discovery Callback failed. {}", getRootCause(ex).getMessage());
+            log.warn("Initialization of the Azure Cluster Discovery Callback failed. {}",
+                    getRootCause(ex).getMessage());
         }
 
     }
@@ -103,8 +108,7 @@ public class AzureClusterDiscoveryCallback implements ClusterDiscoveryCallback {
 
         try {
             if (!azureStorageClient.existsContainer()) {
-                log.info(
-                        "Azure Blob Storage Container {} doesn't exist. Creating it.",
+                log.info("Azure Blob Storage Container {} doesn't exist. Creating it.",
                         azureStorageClient.getStorageConfig().getContainerName());
                 azureStorageClient.createContainer();
             }
@@ -168,8 +172,7 @@ public class AzureClusterDiscoveryCallback implements ClusterDiscoveryCallback {
 
             if (nodeFile.isExpired(azureStorageClient.getStorageConfig().getFileExpirationInSeconds())) {
 
-                log.debug(
-                        "Azure Blob of node with clusterId {} is expired. Blob will be deleted.",
+                log.debug("Azure Blob of node with clusterId {} is expired. Blob will be deleted.",
                         nodeFile.getClusterId());
 
                 final String blobKey = azureStorageClient.getStorageConfig().getFilePrefix() + nodeFile.getClusterId();
@@ -232,15 +235,11 @@ public class AzureClusterDiscoveryCallback implements ClusterDiscoveryCallback {
         return nodeFile;
     }
 
-    void setAzureStorageClient(final @NotNull AzureStorageClient azureStorageClient) {
-        this.azureStorageClient = azureStorageClient;
-    }
-
     private @NotNull Throwable getRootCause(final @NotNull Throwable e) {
         Throwable cause;
         Throwable result = e;
 
-        while(null != (cause = result.getCause())  && (result != cause) ) {
+        while (null != (cause = result.getCause()) && (result != cause)) {
             result = cause;
         }
         return result;

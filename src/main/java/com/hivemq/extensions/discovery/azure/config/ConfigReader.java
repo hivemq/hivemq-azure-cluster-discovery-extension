@@ -28,9 +28,9 @@ import java.util.Properties;
 
 public class ConfigReader {
 
-    public static final String STORAGE_FILE = "azDiscovery.properties";
+    public static final @NotNull String STORAGE_FILE = "azDiscovery.properties";
 
-    private static final Logger logger = LoggerFactory.getLogger(ConfigReader.class);
+    private static final @NotNull Logger logger = LoggerFactory.getLogger(ConfigReader.class);
 
     private final @NotNull File extensionHomeFolder;
 
@@ -38,12 +38,82 @@ public class ConfigReader {
         extensionHomeFolder = extensionInformation.getExtensionHomeFolder();
     }
 
+    private static boolean isValid(final @NotNull AzureDiscoveryConfig azureDiscoveryConfig) {
+
+        final String connectionString = azureDiscoveryConfig.getConnectionString();
+        if (isNullOrBlank(connectionString)) {
+            logger.warn("The Connection String in the configuration file was empty.");
+            return false;
+        }
+
+        final String containerName = azureDiscoveryConfig.getContainerName();
+        if (isNullOrBlank(containerName)) {
+            logger.warn("The Container Name in the configuration file was empty.");
+            return false;
+        }
+
+        final long fileExpirationInSeconds;
+        try {
+            fileExpirationInSeconds = azureDiscoveryConfig.getFileExpirationInSeconds();
+        } catch (final UnsupportedOperationException e) {
+            logger.warn("The File Expiration Interval in the configuration file was not valid. {}.", e.getMessage());
+            return false;
+        }
+        if (fileExpirationInSeconds < 0) {
+            logger.warn("The File Expiration Interval in the configuration file was negative.");
+            return false;
+        }
+
+        final long fileUpdateIntervalInSeconds;
+        try {
+            fileUpdateIntervalInSeconds = azureDiscoveryConfig.getFileUpdateIntervalInSeconds();
+        } catch (final UnsupportedOperationException e) {
+            logger.warn("The File Update Interval in the configuration file was not valid. {}.", e.getMessage());
+            return false;
+        }
+        if (fileUpdateIntervalInSeconds < 0) {
+            logger.warn("The File Update Interval in the configuration file was negative.");
+            return false;
+        }
+
+        if (!(fileUpdateIntervalInSeconds == 0 && fileExpirationInSeconds == 0)) {
+
+            if (fileUpdateIntervalInSeconds == fileExpirationInSeconds) {
+                logger.warn("The File Update Interval is the same as the File Expiration Interval.");
+                return false;
+            }
+
+            if (fileUpdateIntervalInSeconds == 0) {
+                logger.warn("The File Update Interval is deactivated but the File Expiration Interval is set.");
+                return false;
+            }
+
+            if (fileExpirationInSeconds == 0) {
+                logger.warn("The File Expiration Interval is deactivated but the File Update Interval is set.");
+                return false;
+            }
+
+            if (!(fileUpdateIntervalInSeconds < fileExpirationInSeconds)) {
+                logger.warn("The File Update Interval is larger than the File Expiration Interval.");
+                return false;
+            }
+        }
+
+
+        return true;
+    }
+
+    public static boolean isNullOrBlank(final @Nullable String value) {
+        return value == null || value.isBlank();
+    }
+
     public @Nullable AzureDiscoveryConfig readConfiguration() {
 
         final File propertiesFile = new File(extensionHomeFolder, STORAGE_FILE);
 
         if (!propertiesFile.exists()) {
-            logger.warn("Could not find '{}'. Please verify that the properties file is located under '{}'.",
+            logger.warn(
+                    "Could not find '{}'. Please verify that the properties file is located under '{}'.",
                     STORAGE_FILE,
                     extensionHomeFolder);
             return null;
@@ -65,8 +135,7 @@ public class ConfigReader {
             final AzureDiscoveryConfig azureDiscoveryConfig =
                     ConfigFactory.create(AzureDiscoveryConfig.class, properties);
             if (!isValid(azureDiscoveryConfig)) {
-                logger.warn(
-                        "The Configuration of the Azure Storage Cluster Discovery Extension is not valid.");
+                logger.warn("The Configuration of the Azure Storage Cluster Discovery Extension is not valid.");
                 return null;
             }
             logger.trace("Read properties file '{}' successfully.", propertiesFile.getAbsolutePath());
@@ -82,82 +151,5 @@ public class ConfigReader {
         }
 
         return null;
-    }
-
-    private static boolean isValid(final @NotNull AzureDiscoveryConfig azureDiscoveryConfig) {
-
-        final String connectionString = azureDiscoveryConfig.getConnectionString();
-        if (isNullOrBlank(connectionString)) {
-            logger.warn("The Connection String in the configuration file was empty.");
-            return false;
-        }
-
-        final String containerName = azureDiscoveryConfig.getContainerName();
-        if (isNullOrBlank(containerName)) {
-            logger.warn("The Container Name in the configuration file was empty.");
-            return false;
-        }
-
-        final long fileExpirationInSeconds;
-        try {
-            fileExpirationInSeconds = azureDiscoveryConfig.getFileExpirationInSeconds();
-        } catch (final UnsupportedOperationException e) {
-            logger.warn(
-                    "The File Expiration Interval in the configuration file was not valid. {}.", e.getMessage());
-            return false;
-        }
-        if (fileExpirationInSeconds < 0) {
-            logger.warn(
-                    "The File Expiration Interval in the configuration file was negative.");
-            return false;
-        }
-
-        final long fileUpdateIntervalInSeconds;
-        try {
-            fileUpdateIntervalInSeconds = azureDiscoveryConfig.getFileUpdateIntervalInSeconds();
-        } catch (final UnsupportedOperationException e) {
-            logger.warn(
-                    "The File Update Interval in the configuration file was not valid. {}.", e.getMessage());
-            return false;
-        }
-        if (fileUpdateIntervalInSeconds < 0) {
-            logger.warn(
-                    "The File Update Interval in the configuration file was negative.");
-            return false;
-        }
-
-        if (!(fileUpdateIntervalInSeconds == 0 && fileExpirationInSeconds == 0)) {
-
-            if (fileUpdateIntervalInSeconds == fileExpirationInSeconds) {
-                logger.warn(
-                        "The File Update Interval is the same as the File Expiration Interval.");
-                return false;
-            }
-
-            if (fileUpdateIntervalInSeconds == 0) {
-                logger.warn(
-                        "The File Update Interval is deactivated but the File Expiration Interval is set.");
-                return false;
-            }
-
-            if (fileExpirationInSeconds == 0) {
-                logger.warn(
-                        "The File Expiration Interval is deactivated but the File Update Interval is set.");
-                return false;
-            }
-
-            if (!(fileUpdateIntervalInSeconds < fileExpirationInSeconds)) {
-                logger.warn(
-                        "The File Update Interval is larger than the File Expiration Interval.");
-                return false;
-            }
-        }
-
-
-        return true;
-    }
-
-    public static boolean isNullOrBlank(final @Nullable String value) {
-        return value == null || value.isBlank();
     }
 }

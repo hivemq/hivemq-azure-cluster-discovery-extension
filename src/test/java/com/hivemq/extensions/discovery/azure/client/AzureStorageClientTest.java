@@ -18,21 +18,19 @@ package com.hivemq.extensions.discovery.azure.client;
 
 import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
+import com.hivemq.extension.sdk.api.annotations.NotNull;
 import com.hivemq.extension.sdk.api.parameter.ExtensionInformation;
 import com.hivemq.extensions.discovery.azure.config.ClusterNodeFileTest;
 import com.hivemq.extensions.discovery.azure.config.ConfigReader;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.util.Arrays;
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -40,17 +38,16 @@ import static org.mockito.Mockito.*;
 
 class AzureStorageClientTest {
 
+    private @NotNull ExtensionInformation extensionInformation;
+    private @NotNull AzureStorageClient azStorageClient;
+
     @TempDir
-    File temporaryFolder;
-
-    @Mock
-    public ExtensionInformation extensionInformation;
-
-    private AzureStorageClient azStorageClient;
+    @NotNull File temporaryFolder;
 
     @BeforeEach
     void setUp() throws IOException {
-        MockitoAnnotations.openMocks(this);
+        extensionInformation = mock(ExtensionInformation.class);
+
         when(extensionInformation.getExtensionHomeFolder()).thenReturn(temporaryFolder);
 
         try (final PrintWriter printWriter = new PrintWriter(new File(temporaryFolder, ConfigReader.STORAGE_FILE))) {
@@ -109,7 +106,6 @@ class AzureStorageClientTest {
     @Test
     void test_create_invalid_config() throws IOException {
         deleteFilesInTemporaryFolder();
-        temporaryFolder.createNewFile();
         try (final PrintWriter printWriter = new PrintWriter(new File(temporaryFolder, ConfigReader.STORAGE_FILE))) {
             printWriter.println("");
         }
@@ -120,7 +116,9 @@ class AzureStorageClientTest {
     }
 
     private void deleteFilesInTemporaryFolder() {
-        Arrays.stream(Objects.requireNonNull(temporaryFolder.listFiles())).forEach(File::delete);
+        for (final File file : Objects.requireNonNull(temporaryFolder.listFiles())) {
+            assertTrue(file.delete());
+        }
     }
 
     @Test

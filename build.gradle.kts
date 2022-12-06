@@ -43,7 +43,7 @@ tasks.withType<Test>().configureEach {
 dependencies {
     integrationTestImplementation("org.testcontainers:testcontainers:${property("testcontainers.version")}")
     integrationTestImplementation("org.testcontainers:toxiproxy:${property("testcontainers.version")}")
-    integrationTestImplementation("com.hivemq:hivemq-testcontainer-junit5:${property("hivemq-testcontainer.version")}")
+    integrationTestImplementation("org.testcontainers:hivemq:${property("testcontainers.version")}")
 }
 
 /* ******************** checks ******************** */

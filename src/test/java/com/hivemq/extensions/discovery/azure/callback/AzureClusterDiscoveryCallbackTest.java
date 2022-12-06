@@ -18,6 +18,7 @@ package com.hivemq.extensions.discovery.azure.callback;
 
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.models.BlobItem;
+import com.hivemq.extension.sdk.api.annotations.NotNull;
 import com.hivemq.extension.sdk.api.parameter.ExtensionInformation;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryInput;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryOutput;
@@ -29,8 +30,6 @@ import com.hivemq.extensions.discovery.azure.config.ConfigReader;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 import java.io.File;
 import java.io.PrintWriter;
@@ -45,31 +44,22 @@ import static org.mockito.Mockito.*;
 
 class AzureClusterDiscoveryCallbackTest {
 
+    private @NotNull ExtensionInformation extensionInformation;
+    private @NotNull AzureStorageClient azStorageClient;
+    private @NotNull ClusterDiscoveryInput clusterDiscoveryInput;
+    private @NotNull ClusterDiscoveryOutput clusterDiscoveryOutput;
+    private @NotNull AzureClusterDiscoveryCallback azureClusterDiscoveryCallback;
+    private @NotNull ConfigReader configurationReader;
+
     @TempDir
-    File temporaryFolder;
-
-    @Mock
-    public ExtensionInformation extensionInformation;
-
-    @Mock
-    public AzureStorageClient azStorageClient;
-
-    @Mock
-    BlobContainerClient blobContainerClient;
-
-    @Mock
-    public ClusterDiscoveryInput clusterDiscoveryInput;
-
-    @Mock
-    public ClusterDiscoveryOutput clusterDiscoveryOutput;
-
-    private AzureClusterDiscoveryCallback azureClusterDiscoveryCallback;
-    private ConfigReader configurationReader;
-    private AzureDiscoveryConfig azAzureDiscoveryConfig;
+    @NotNull File temporaryFolder;
 
     @BeforeEach
     void setUp() throws Exception {
-        MockitoAnnotations.openMocks(this);
+        extensionInformation = mock(ExtensionInformation.class);
+        azStorageClient = mock(AzureStorageClient.class);
+        clusterDiscoveryInput = mock(ClusterDiscoveryInput.class);
+        clusterDiscoveryOutput = mock(ClusterDiscoveryOutput.class);
 
         when(clusterDiscoveryInput.getOwnClusterId()).thenReturn("ABCD12");
         when(clusterDiscoveryInput.getOwnAddress()).thenReturn(new ClusterNodeAddress("127.0.0.1", 7800));
@@ -85,14 +75,13 @@ class AzureClusterDiscoveryCallbackTest {
         }
 
         configurationReader = new ConfigReader(extensionInformation);
-        azureClusterDiscoveryCallback = new AzureClusterDiscoveryCallback(configurationReader);
+        azureClusterDiscoveryCallback = new AzureClusterDiscoveryCallback(azStorageClient);
         when(azStorageClient.getConfigReader()).thenReturn(configurationReader);
-        azureClusterDiscoveryCallback.setAzureStorageClient(azStorageClient);
 
         azStorageClient.getConfigReader().readConfiguration();
-        when(azStorageClient.getContainerClient()).thenReturn(blobContainerClient);
+        when(azStorageClient.getContainerClient()).thenReturn(mock(BlobContainerClient.class));
 
-        azAzureDiscoveryConfig = configurationReader.readConfiguration();
+        final AzureDiscoveryConfig azAzureDiscoveryConfig = configurationReader.readConfiguration();
         when(azStorageClient.getStorageConfig()).thenReturn(azAzureDiscoveryConfig);
         when(azStorageClient.existsContainer()).thenReturn(true);
     }

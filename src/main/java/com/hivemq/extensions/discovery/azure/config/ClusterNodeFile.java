@@ -28,9 +28,9 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class ClusterNodeFile {
 
-    static final String CONTENT_VERSION = "4";
-    static final String CONTENT_SEPARATOR = "||||";
-    private static final Pattern CONTENT_SEPARATOR_PATTERN = Pattern.compile("\\|\\|\\|\\|");
+    static final @NotNull String CONTENT_VERSION = "4";
+    static final @NotNull String CONTENT_SEPARATOR = "||||";
+    private static final @NotNull Pattern CONTENT_SEPARATOR_PATTERN = Pattern.compile("\\|\\|\\|\\|");
 
     private final @NotNull String clusterId;
     private final @NotNull ClusterNodeAddress clusterNodeAddress;
@@ -122,7 +122,7 @@ public class ClusterNodeFile {
     }
 
     @Override
-    public String toString() {
+    public @NotNull String toString() {
 
         final String content =
                 CONTENT_VERSION + CONTENT_SEPARATOR + creationTimeInMillis + CONTENT_SEPARATOR + clusterId +
