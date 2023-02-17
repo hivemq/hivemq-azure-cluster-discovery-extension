@@ -3,7 +3,7 @@
 ![Extension Type](https://img.shields.io/badge/Extension_Type-Integration-orange?style=for-the-badge)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/hivemq/hivemq-azure-cluster-discovery-extension?style=for-the-badge)](https://github.com/hivemq/hivemq-azure-cluster-discovery-extension/releases/latest)
 [![GitHub](https://img.shields.io/github/license/hivemq/hivemq-azure-cluster-discovery-extension?style=for-the-badge&color=brightgreen)](LICENSE)
-[![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/hivemq/hivemq-azure-cluster-discovery-extension/CI%20Check/master?style=for-the-badge)](https://github.com/hivemq/hivemq-azure-cluster-discovery-extension/actions/workflows/check.yml?query=branch%3Amaster)
+[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/hivemq/hivemq-azure-cluster-discovery-extension/check.yml?branch=master&style=for-the-badge)](https://github.com/hivemq/hivemq-azure-cluster-discovery-extension/actions/workflows/check.yml?query=branch%3Amaster)
 
 ## Purpose
 
