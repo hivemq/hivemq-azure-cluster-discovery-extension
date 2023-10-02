@@ -53,7 +53,7 @@
   "variables": {
     "imagePublisher": "Canonical",
     "imageOffer": "UbuntuServer",
-    "ubuntuOSVersion": "18.04-LTS",
+    "ubuntuOSVersion": "22.04-LTS",
     "loadBalancersName": "hivemq-lb",
     "vmName": "hivemq-node",
     "asName": "hivemq-as",
