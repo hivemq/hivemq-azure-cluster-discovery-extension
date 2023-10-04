@@ -20,7 +20,7 @@ Additionally, every broker updates its own file on a regular basis to prevent th
 ## Installation
 
 * Download the extension from
-  the [HiveMQ Website](https://www.hivemq.com/releases/extensions/hivemq-azure-cluster-discovery-extension-1.0.0.zip) or
+  the [HiveMQ Website](https://www.hivemq.com/releases/extensions/hivemq-azure-cluster-discovery-extension-1.1.0.zip) or
   from the [GitHub Releases Page](https://github.com/hivemq/hivemq-azure-cluster-discovery-extension/releases/latest).
 * Copy the content of the zip file to the `extensions` folder of your HiveMQ nodes.
 * Modify the `azDiscovery.properties` file for your needs.
@@ -38,13 +38,13 @@ The `azDiscovery.properties` can be reloaded during runtime.
 
 ### General Configuration
 
-| Config Name              |  Default Value   | Description                                                                                                                                                                                                                        |
-|--------------------------|:----------------:|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| connection&#x2011;string |                  | The required connection string of your Azure Storage Account. See the [Azure Documentation](https://docs.microsoft.com/de-de/com.hivemq.extensions.azure/storage/common/storage-configure-connection-string) for more information. |
-| container&#x2011;name    | hivemq-discovery | The name of the Azure Storage Container in which the Blob for the discovery will be created in. If the Container does not exist yet, it will be created by the extension.                                                          |
-| file&#x2011;prefix       |   hivemq-node-   | An optional file-prefix for the Blob to create, which holds the cluster node information for the discovery. Do not omit this value if you reuse the specified container for other files.                                           |
-| file&#x2011;expiration   |       360        | Timeout in seconds after which the created Blob will be deleted by other nodes, if it was not updated in time.                                                                                                                     |
-| update&#x2011;interval   |       180        | Interval in seconds in which the Blob will be updated. Must be less than file-expiration.                                                                                                                                          |
+| Config Name              |  Default Value   | Description                                                                                                                                                                                                   |
+|--------------------------|:----------------:|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| connection&#x2011;string |                  | The required connection string of your Azure Storage Account. See the [Azure Documentation](https://learn.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string) for more information. |
+| container&#x2011;name    | hivemq-discovery | The name of the Azure Storage Container in which the Blob for the discovery will be created in. If the Container does not exist yet, it will be created by the extension.                                     |
+| file&#x2011;prefix       |   hivemq-node-   | An optional file-prefix for the Blob to create, which holds the cluster node information for the discovery. Do not omit this value if you reuse the specified container for other files.                      |
+| file&#x2011;expiration   |       360        | Timeout in seconds after which the created Blob will be deleted by other nodes, if it was not updated in time.                                                                                                |
+| update&#x2011;interval   |       180        | Interval in seconds in which the Blob will be updated. Must be less than file-expiration.                                                                                                                     |
 
 ### Example Configuration
 
