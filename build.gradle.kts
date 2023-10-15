@@ -1,7 +1,7 @@
 plugins {
-    id("com.hivemq.extension")
-    id("com.github.hierynomus.license")
-    id("io.github.sgtsilvio.gradle.defaults")
+    alias(libs.plugins.hivemq.extension)
+    alias(libs.plugins.defaults)
+    alias(libs.plugins.license)
 }
 
 group = "com.hivemq.extensions"
@@ -12,7 +12,7 @@ hivemqExtension {
     author.set("HiveMQ")
     priority.set(1000)
     startPriority.set(10000)
-    sdkVersion.set("${property("hivemq-extension-sdk.version")}")
+    sdkVersion.set(libs.versions.hivemq.extensionSdk)
 
     resources {
         from("LICENSE")
@@ -20,18 +20,18 @@ hivemqExtension {
 }
 
 dependencies {
-    hivemqProvided("ch.qos.logback:logback-classic:${property("logback.version")}")
-    implementation("com.azure:azure-storage-blob:${property("azure-storage-blob.version")}")
-    implementation("org.aeonbits.owner:owner-java8:${property("owner.version")}")
+    hivemqProvided(libs.logback.classic)
+    implementation(libs.azure.storage.blob)
+    implementation(libs.owner.java8)
 }
 
 /* ******************** test ******************** */
 
 dependencies {
-    testImplementation("org.junit.jupiter:junit-jupiter-api:${property("junit.version")}")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
-    testImplementation("org.mockito:mockito-inline:${property("mockito.version")}")
-    testImplementation("org.awaitility:awaitility:${property("awaitlity.version")}")
+    testImplementation(libs.junit.jupiter.api)
+    testRuntimeOnly(libs.junit.jupiter.engine)
+    testImplementation(libs.mockito)
+    testImplementation(libs.awaitility)
 }
 
 tasks.withType<Test>().configureEach {
@@ -41,12 +41,12 @@ tasks.withType<Test>().configureEach {
 /* ******************** integration test ******************** */
 
 dependencies {
-    integrationTestCompileOnly("org.jetbrains:annotations:${property("jetbrains-annotations.version")}")
-    integrationTestImplementation("org.awaitility:awaitility:${property("awaitlity.version")}")
-    integrationTestImplementation("org.testcontainers:testcontainers:${property("testcontainers.version")}")
-    integrationTestImplementation("org.testcontainers:toxiproxy:${property("testcontainers.version")}")
-    integrationTestImplementation("org.testcontainers:hivemq:${property("testcontainers.version")}")
-    integrationTestImplementation("com.azure:azure-storage-blob:${property("azure-storage-blob.version")}")
+    integrationTestCompileOnly(libs.jetbrains.annotations)
+    integrationTestImplementation(libs.awaitility)
+    integrationTestImplementation(libs.testcontainers)
+    integrationTestImplementation(libs.testcontainers.toxiproxy)
+    integrationTestImplementation(libs.testcontainers.hivemq)
+    integrationTestImplementation(libs.azure.storage.blob)
 }
 
 /* ******************** checks ******************** */
