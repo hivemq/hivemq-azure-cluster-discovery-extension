@@ -8,6 +8,7 @@ out/
 .idea/*
 !.idea/codeStyles
 !.idea/inspectionProfiles
+!.idea/runConfigurations
 
 .java-version
 .DS_Store
