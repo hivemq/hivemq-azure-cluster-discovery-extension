@@ -1,5 +1,5 @@
 [versions]
-awaitlity = "4.1.1"
+awaitility = "4.2.0"
 azure-storage-blob = "12.14.4"
 hivemq-extensionSdk = "4.7.5"
 jetbrains-annotations = "24.0.1"
@@ -10,7 +10,7 @@ owner = "1.0.12"
 testcontainers = "1.19.1"
 
 [libraries]
-awaitility = { module = "org.awaitility:awaitility", version.ref = "awaitlity" }
+awaitility = { module = "org.awaitility:awaitility", version.ref = "awaitility" }
 azure-storage-blob = { module = "com.azure:azure-storage-blob", version.ref = "azure-storage-blob" }
 jetbrains-annotations = { module = "org.jetbrains:annotations", version.ref = "jetbrains-annotations" }
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
