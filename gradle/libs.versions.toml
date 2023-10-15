@@ -14,7 +14,7 @@ awaitility = { module = "org.awaitility:awaitility", version.ref = "awaitlity" }
 azure-storage-blob = { module = "com.azure:azure-storage-blob", version.ref = "azure-storage-blob" }
 jetbrains-annotations = { module = "org.jetbrains:annotations", version.ref = "jetbrains-annotations" }
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
-mockito = { module = "org.mockito:mockito-inline", version.ref = "mockito" }
+mockito-inline = { module = "org.mockito:mockito-inline", version.ref = "mockito" }
 owner-java8 = { module = "org.aeonbits.owner:owner-java8", version.ref = "owner" }
 testcontainers = { module = "org.testcontainers:testcontainers", version.ref = "testcontainers" }
 testcontainers-hivemq = { module = "org.testcontainers:hivemq", version.ref = "testcontainers" }

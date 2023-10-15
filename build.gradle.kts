@@ -33,7 +33,7 @@ testing {
         }
         "test"(JvmTestSuite::class) {
             dependencies {
-                implementation(libs.mockito)
+                implementation(libs.mockito.inline)
                 implementation(libs.awaitility)
             }
         }
