@@ -45,6 +45,7 @@ testing {
                 implementation(libs.testcontainers.hivemq)
                 implementation(libs.testcontainers.toxiproxy)
                 implementation(libs.azure.storage.blob)
+                runtimeOnly(libs.logback.classic)
             }
         }
     }
