@@ -15,7 +15,7 @@
  */
 package com.hivemq.extensions.discovery.azure;
 
-import com.hivemq.extension.sdk.api.annotations.NotNull;
+import org.jetbrains.annotations.NotNull;
 import org.testcontainers.utility.DockerImageName;
 
 public final class DockerImageNames {
