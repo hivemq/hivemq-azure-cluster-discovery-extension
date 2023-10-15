@@ -1,0 +1,28 @@
+[versions]
+awaitlity = "4.1.1"
+azure-storage-blob = "12.14.4"
+hivemq-extensionSdk = "4.7.5"
+jetbrains-annotations = "24.0.1"
+junit-jupiter = "5.8.2"
+logback = "1.2.11"
+mockito = "4.1.0"
+owner = "1.0.12"
+testcontainers = "1.17.5"
+
+[libraries]
+awaitility = { module = "org.awaitility:awaitility", version.ref = "awaitlity" }
+azure-storage-blob = { module = "com.azure:azure-storage-blob", version.ref = "azure-storage-blob" }
+jetbrains-annotations = { module = "org.jetbrains:annotations", version.ref = "jetbrains-annotations" }
+junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit-jupiter" }
+junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit-jupiter" }
+logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+mockito = { module = "org.mockito:mockito-inline", version.ref = "mockito" }
+owner-java8 = { module = "org.aeonbits.owner:owner-java8", version.ref = "owner" }
+testcontainers = { module = "org.testcontainers:testcontainers", version.ref = "testcontainers" }
+testcontainers-hivemq = { module = "org.testcontainers:hivemq", version.ref = "testcontainers" }
+testcontainers-toxiproxy = { module = "org.testcontainers:toxiproxy", version.ref = "testcontainers" }
+
+[plugins]
+hivemq-extension = { id = "com.hivemq.extension", version = "3.1.0" }
+defaults = { id = "io.github.sgtsilvio.gradle.defaults", version = "0.2.0" }
+license = { id = "com.github.hierynomus.license", version = "0.16.1" }
