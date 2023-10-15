@@ -25,31 +25,30 @@ dependencies {
     implementation(libs.owner.java8)
 }
 
-/* ******************** test ******************** */
-
-dependencies {
-    testImplementation(libs.junit.jupiter.api)
-    testRuntimeOnly(libs.junit.jupiter.engine)
-    testImplementation(libs.mockito)
-    testImplementation(libs.awaitility)
+@Suppress("UnstableApiUsage")
+testing {
+    suites {
+        withType<JvmTestSuite> {
+            useJUnitJupiter(libs.versions.junit.jupiter)
+        }
+        "test"(JvmTestSuite::class) {
+            dependencies {
+                implementation(libs.mockito)
+                implementation(libs.awaitility)
+            }
+        }
+        "integrationTest"(JvmTestSuite::class) {
+            dependencies {
+                compileOnly(libs.jetbrains.annotations)
+                implementation(libs.awaitility)
+                implementation(libs.testcontainers)
+                implementation(libs.testcontainers.hivemq)
+                implementation(libs.testcontainers.toxiproxy)
+                implementation(libs.azure.storage.blob)
+            }
+        }
+    }
 }
-
-tasks.withType<Test>().configureEach {
-    useJUnitPlatform()
-}
-
-/* ******************** integration test ******************** */
-
-dependencies {
-    integrationTestCompileOnly(libs.jetbrains.annotations)
-    integrationTestImplementation(libs.awaitility)
-    integrationTestImplementation(libs.testcontainers)
-    integrationTestImplementation(libs.testcontainers.toxiproxy)
-    integrationTestImplementation(libs.testcontainers.hivemq)
-    integrationTestImplementation(libs.azure.storage.blob)
-}
-
-/* ******************** checks ******************** */
 
 license {
     header = rootDir.resolve("HEADER")

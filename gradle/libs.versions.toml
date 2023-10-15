@@ -13,8 +13,6 @@ testcontainers = "1.17.5"
 awaitility = { module = "org.awaitility:awaitility", version.ref = "awaitlity" }
 azure-storage-blob = { module = "com.azure:azure-storage-blob", version.ref = "azure-storage-blob" }
 jetbrains-annotations = { module = "org.jetbrains:annotations", version.ref = "jetbrains-annotations" }
-junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit-jupiter" }
-junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit-jupiter" }
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 mockito = { module = "org.mockito:mockito-inline", version.ref = "mockito" }
 owner-java8 = { module = "org.aeonbits.owner:owner-java8", version.ref = "owner" }
