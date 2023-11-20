@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.hivemq.extensions.discovery.azure.client;
+package com.hivemq.extensions.cluster.discovery.azure.client;
 
 import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
@@ -26,8 +26,8 @@ import com.azure.storage.blob.models.BlobStorageException;
 import com.azure.storage.blob.models.ListBlobsOptions;
 import com.hivemq.extension.sdk.api.annotations.NotNull;
 import com.hivemq.extension.sdk.api.annotations.Nullable;
-import com.hivemq.extensions.discovery.azure.config.AzureDiscoveryConfig;
-import com.hivemq.extensions.discovery.azure.config.ConfigReader;
+import com.hivemq.extensions.cluster.discovery.azure.config.AzureDiscoveryConfig;
+import com.hivemq.extensions.cluster.discovery.azure.config.ConfigReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

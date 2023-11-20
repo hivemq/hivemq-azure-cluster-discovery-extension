@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.hivemq.extensions.discovery.azure.callback;
+package com.hivemq.extensions.cluster.discovery.azure.callback;
 
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.models.BlobItem;
@@ -23,10 +23,10 @@ import com.hivemq.extension.sdk.api.parameter.ExtensionInformation;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryInput;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryOutput;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterNodeAddress;
-import com.hivemq.extensions.discovery.azure.client.AzureStorageClient;
-import com.hivemq.extensions.discovery.azure.config.AzureDiscoveryConfig;
-import com.hivemq.extensions.discovery.azure.config.ClusterNodeFileTest;
-import com.hivemq.extensions.discovery.azure.config.ConfigReader;
+import com.hivemq.extensions.cluster.discovery.azure.client.AzureStorageClient;
+import com.hivemq.extensions.cluster.discovery.azure.config.AzureDiscoveryConfig;
+import com.hivemq.extensions.cluster.discovery.azure.config.ClusterNodeFileTest;
+import com.hivemq.extensions.cluster.discovery.azure.config.ConfigReader;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
