@@ -13,20 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.hivemq.extensions.cluster.discovery.azure;
 
-package com.hivemq.extensions.discovery.azure.util;
+import org.jetbrains.annotations.NotNull;
+import org.testcontainers.utility.DockerImageName;
 
-import com.hivemq.extension.sdk.api.annotations.Nullable;
+public final class DockerImageNames {
 
-/**
- * @author Abdullah Imal
- */
-public final class StringUtil {
+    public static final @NotNull DockerImageName AZURITE_IMAGE = DockerImageName.parse("mcr.microsoft.com/azure-storage/azurite:3.14.3");
 
-    private StringUtil() {
-    }
+    public static final @NotNull DockerImageName TOXIPROXY_IMAGE = DockerImageName.parse("shopify/toxiproxy:2.1.0");
 
-    public static boolean isNullOrBlank(final @Nullable String value) {
-        return value == null || value.isBlank();
+    public static final @NotNull DockerImageName HIVEMQ_IMAGE =
+            DockerImageName.parse("hivemq/hivemq4").withTag("latest");
+
+    public DockerImageNames() {
     }
 }
