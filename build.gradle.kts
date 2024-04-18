@@ -8,11 +8,11 @@ group = "com.hivemq.extensions"
 description = "HiveMQ Discovery Extension based on usage of Azure Storage Blobs"
 
 hivemqExtension {
-    name.set("Azure Cluster Discovery Extension")
-    author.set("HiveMQ")
-    priority.set(1000)
-    startPriority.set(10000)
-    sdkVersion.set(libs.versions.hivemq.extensionSdk)
+    name = "Azure Cluster Discovery Extension"
+    author = "HiveMQ"
+    priority = 1000
+    startPriority = 10000
+    sdkVersion = libs.versions.hivemq.extensionSdk
 
     resources {
         from("LICENSE")
