@@ -1,5 +1,5 @@
 [versions]
-awaitility = "4.2.0"
+awaitility = "4.2.1"
 azure-storage-blob = "12.14.4"
 hivemq-extensionSdk = "4.7.5"
 jetbrains-annotations = "24.0.1"
