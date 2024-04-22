@@ -1,11 +1,11 @@
 [versions]
 awaitility = "4.2.1"
-azure-storage-blob = "12.14.4"
+azure-storage-blob = "12.25.3"
 hivemq-extensionSdk = "4.7.5"
-jetbrains-annotations = "24.0.1"
+jetbrains-annotations = "24.1.0"
 junit-jupiter = "5.10.0"
-logback = "1.2.11"
-mockito = "5.6.0"
+logback = "1.5.6"
+mockito = "5.11.0"
 owner = "1.0.12"
 testcontainers = "1.19.7"
 
