@@ -16,14 +16,16 @@
 
 package com.hivemq.extensions.cluster.discovery.azure.config;
 
-import com.hivemq.extension.sdk.api.annotations.NotNull;
-import com.hivemq.extension.sdk.api.annotations.Nullable;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterNodeAddress;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Base64;
 import java.util.regex.Pattern;
 
-import static com.hivemq.extensions.cluster.discovery.azure.util.Preconditions.*;
+import static com.hivemq.extensions.cluster.discovery.azure.util.Preconditions.checkArgument;
+import static com.hivemq.extensions.cluster.discovery.azure.util.Preconditions.checkNotNull;
+import static com.hivemq.extensions.cluster.discovery.azure.util.Preconditions.checkNotNullOrBlank;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class ClusterNodeFile {
@@ -124,10 +126,15 @@ public class ClusterNodeFile {
     @Override
     public @NotNull String toString() {
 
-        final String content =
-                CONTENT_VERSION + CONTENT_SEPARATOR + creationTimeInMillis + CONTENT_SEPARATOR + clusterId +
-                        CONTENT_SEPARATOR + clusterNodeAddress.getHost() + CONTENT_SEPARATOR +
-                        clusterNodeAddress.getPort();
+        final String content = CONTENT_VERSION +
+                CONTENT_SEPARATOR +
+                creationTimeInMillis +
+                CONTENT_SEPARATOR +
+                clusterId +
+                CONTENT_SEPARATOR +
+                clusterNodeAddress.getHost() +
+                CONTENT_SEPARATOR +
+                clusterNodeAddress.getPort();
 
         return new String(Base64.getEncoder().encode(content.getBytes(UTF_8)), UTF_8);
     }

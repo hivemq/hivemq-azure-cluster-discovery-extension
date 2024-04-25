@@ -18,10 +18,10 @@ package com.hivemq.extensions.cluster.discovery.azure.client;
 
 import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
-import com.hivemq.extension.sdk.api.annotations.NotNull;
 import com.hivemq.extension.sdk.api.parameter.ExtensionInformation;
 import com.hivemq.extensions.cluster.discovery.azure.config.ClusterNodeFileTest;
 import com.hivemq.extensions.cluster.discovery.azure.config.ConfigReader;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;

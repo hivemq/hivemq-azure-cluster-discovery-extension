@@ -16,14 +16,18 @@
 
 package com.hivemq.extensions.cluster.discovery.azure.config;
 
-import com.hivemq.extension.sdk.api.annotations.NotNull;
-import com.hivemq.extension.sdk.api.annotations.Nullable;
 import com.hivemq.extension.sdk.api.parameter.ExtensionInformation;
 import org.aeonbits.owner.ConfigFactory;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 
 public class ConfigReader {
@@ -112,8 +116,7 @@ public class ConfigReader {
         final File propertiesFile = new File(extensionHomeFolder, STORAGE_FILE);
 
         if (!propertiesFile.exists()) {
-            logger.warn(
-                    "Could not find '{}'. Please verify that the properties file is located under '{}'.",
+            logger.warn("Could not find '{}'. Please verify that the properties file is located under '{}'.",
                     STORAGE_FILE,
                     extensionHomeFolder);
             return null;
@@ -144,8 +147,7 @@ public class ConfigReader {
         } catch (final FileNotFoundException e) {
             logger.warn("Could not find the properties file '{}'", propertiesFile.getAbsolutePath());
         } catch (final IOException e) {
-            logger.warn(
-                    "An error occurred while reading the properties file {}. {}",
+            logger.warn("An error occurred while reading the properties file {}. {}",
                     propertiesFile.getAbsolutePath(),
                     e.getMessage());
         }
