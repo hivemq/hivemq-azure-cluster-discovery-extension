@@ -62,6 +62,7 @@ public class ClusterNodeFileTest {
 
     @Test
     void whenNodeIdIsNull_thenThrowNPE() {
+        //noinspection DataFlowIssue
         assertThrows(NullPointerException.class, () -> new ClusterNodeFile(null, clusterNodeAddress));
     }
 
@@ -72,6 +73,7 @@ public class ClusterNodeFileTest {
 
     @Test
     void whenClusterNodeAddressIsNull_thenThrowNPE() {
+        //noinspection DataFlowIssue
         assertThrows(NullPointerException.class, () -> new ClusterNodeFile(nodeId, null));
     }
 
@@ -220,6 +222,7 @@ public class ClusterNodeFileTest {
 
     @Test
     void parseClusterNodeFile_null() {
+        //noinspection DataFlowIssue
         assertThrows(NullPointerException.class, () -> ClusterNodeFile.parseClusterNodeFile(null));
     }
 

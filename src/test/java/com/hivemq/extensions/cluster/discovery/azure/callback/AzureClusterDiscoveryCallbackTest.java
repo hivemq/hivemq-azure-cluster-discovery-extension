@@ -59,7 +59,8 @@ class AzureClusterDiscoveryCallbackTest {
     private @NotNull ConfigReader configurationReader;
 
     @TempDir
-    @NotNull File temporaryFolder;
+    @NotNull
+    File temporaryFolder;
 
     @BeforeEach
     void setUp() throws Exception {
@@ -485,7 +486,7 @@ class AzureClusterDiscoveryCallbackTest {
         new File(root).mkdir();
     }
 
-    Iterator<BlobItem> createBlobItemIterator() {
+    @NotNull Iterator<BlobItem> createBlobItemIterator() {
         final BlobItem blobItem = new BlobItem();
         blobItem.setName("ABCD12");
         return List.of(blobItem).iterator();

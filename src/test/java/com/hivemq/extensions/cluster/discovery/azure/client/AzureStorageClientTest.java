@@ -150,7 +150,7 @@ class AzureStorageClientTest {
             final OutputStream outputStream = invocation.getArgument(0);
             outputStream.write(ClusterNodeFileTest.createClusterNodeFileString("3", "3", "3", "3", "3").getBytes());
             return null;
-        }).when(blobClient).download(any());
+        }).when(blobClient).downloadStream(any());
 
         final String blobContent = azStorageClient.getBlobContent("abcd");
         assertNotNull(blobContent);

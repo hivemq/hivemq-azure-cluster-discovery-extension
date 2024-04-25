@@ -143,7 +143,7 @@ public class AzureStorageClient {
         final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
         try {
-            blobClient.download(outputStream);
+            blobClient.downloadStream(outputStream);
         } catch (final BlobStorageException blobStorageException) {
             throw new RuntimeException("Azure Storage Blob download failed with status code " +
                     blobStorageException.getStatusCode() +
