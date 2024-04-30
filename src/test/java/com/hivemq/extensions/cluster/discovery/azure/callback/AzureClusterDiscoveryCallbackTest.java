@@ -59,8 +59,7 @@ class AzureClusterDiscoveryCallbackTest {
     private @NotNull ConfigReader configurationReader;
 
     @TempDir
-    @NotNull
-    File temporaryFolder;
+    @NotNull File temporaryFolder;
 
     @BeforeEach
     void setUp() throws Exception {
