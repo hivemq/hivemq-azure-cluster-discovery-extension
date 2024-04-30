@@ -19,8 +19,6 @@ package com.hivemq.extensions.cluster.discovery.azure.callback;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
 import com.azure.storage.blob.models.BlobItem;
-import com.hivemq.extension.sdk.api.annotations.NotNull;
-import com.hivemq.extension.sdk.api.annotations.Nullable;
 import com.hivemq.extension.sdk.api.services.cluster.ClusterDiscoveryCallback;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryInput;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryOutput;
@@ -28,6 +26,8 @@ import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterNodeAddres
 import com.hivemq.extensions.cluster.discovery.azure.client.AzureStorageClient;
 import com.hivemq.extensions.cluster.discovery.azure.config.ClusterNodeFile;
 import com.hivemq.extensions.cluster.discovery.azure.config.ConfigReader;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

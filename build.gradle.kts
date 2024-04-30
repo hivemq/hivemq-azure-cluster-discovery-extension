@@ -20,6 +20,8 @@ hivemqExtension {
 }
 
 dependencies {
+    compileOnly(libs.jetbrains.annotations)
+
     hivemqProvided(libs.logback.classic)
     implementation(libs.azure.storage.blob)
     implementation(libs.owner.java8)
@@ -33,6 +35,7 @@ testing {
         }
         "test"(JvmTestSuite::class) {
             dependencies {
+                compileOnly(libs.jetbrains.annotations)
                 implementation(libs.mockito)
                 implementation(libs.awaitility)
             }

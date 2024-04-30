@@ -18,7 +18,6 @@ package com.hivemq.extensions.cluster.discovery.azure.callback;
 
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.models.BlobItem;
-import com.hivemq.extension.sdk.api.annotations.NotNull;
 import com.hivemq.extension.sdk.api.parameter.ExtensionInformation;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryInput;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryOutput;
@@ -27,6 +26,7 @@ import com.hivemq.extensions.cluster.discovery.azure.client.AzureStorageClient;
 import com.hivemq.extensions.cluster.discovery.azure.config.AzureDiscoveryConfig;
 import com.hivemq.extensions.cluster.discovery.azure.config.ClusterNodeFileTest;
 import com.hivemq.extensions.cluster.discovery.azure.config.ConfigReader;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -40,7 +40,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyList;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class AzureClusterDiscoveryCallbackTest {
 
@@ -478,7 +485,7 @@ class AzureClusterDiscoveryCallbackTest {
         new File(root).mkdir();
     }
 
-    Iterator<BlobItem> createBlobItemIterator() {
+    @NotNull Iterator<BlobItem> createBlobItemIterator() {
         final BlobItem blobItem = new BlobItem();
         blobItem.setName("ABCD12");
         return List.of(blobItem).iterator();

@@ -16,8 +16,8 @@
 
 package com.hivemq.extensions.cluster.discovery.azure.config;
 
-import com.hivemq.extension.sdk.api.annotations.NotNull;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterNodeAddress;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
@@ -62,6 +62,7 @@ public class ClusterNodeFileTest {
 
     @Test
     void whenNodeIdIsNull_thenThrowNPE() {
+        //noinspection DataFlowIssue
         assertThrows(NullPointerException.class, () -> new ClusterNodeFile(null, clusterNodeAddress));
     }
 
@@ -72,6 +73,7 @@ public class ClusterNodeFileTest {
 
     @Test
     void whenClusterNodeAddressIsNull_thenThrowNPE() {
+        //noinspection DataFlowIssue
         assertThrows(NullPointerException.class, () -> new ClusterNodeFile(nodeId, null));
     }
 
@@ -220,6 +222,7 @@ public class ClusterNodeFileTest {
 
     @Test
     void parseClusterNodeFile_null() {
+        //noinspection DataFlowIssue
         assertThrows(NullPointerException.class, () -> ClusterNodeFile.parseClusterNodeFile(null));
     }
 

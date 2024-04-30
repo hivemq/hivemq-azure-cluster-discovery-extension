@@ -16,8 +16,8 @@
 
 package com.hivemq.extensions.cluster.discovery.azure.config;
 
-import com.hivemq.extension.sdk.api.annotations.NotNull;
 import org.aeonbits.owner.Config;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * @author Till Seeberger

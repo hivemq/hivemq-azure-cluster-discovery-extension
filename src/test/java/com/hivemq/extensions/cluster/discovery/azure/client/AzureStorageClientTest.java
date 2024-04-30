@@ -18,10 +18,10 @@ package com.hivemq.extensions.cluster.discovery.azure.client;
 
 import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
-import com.hivemq.extension.sdk.api.annotations.NotNull;
 import com.hivemq.extension.sdk.api.parameter.ExtensionInformation;
 import com.hivemq.extensions.cluster.discovery.azure.config.ClusterNodeFileTest;
 import com.hivemq.extensions.cluster.discovery.azure.config.ConfigReader;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -150,7 +150,7 @@ class AzureStorageClientTest {
             final OutputStream outputStream = invocation.getArgument(0);
             outputStream.write(ClusterNodeFileTest.createClusterNodeFileString("3", "3", "3", "3", "3").getBytes());
             return null;
-        }).when(blobClient).download(any());
+        }).when(blobClient).downloadStream(any());
 
         final String blobContent = azStorageClient.getBlobContent("abcd");
         assertNotNull(blobContent);
