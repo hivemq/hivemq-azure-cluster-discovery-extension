@@ -1,13 +1,13 @@
 [versions]
 awaitility = "4.2.1"
-azure-storage-blob = "12.25.4"
+azure-storage-blob = "12.27.0"
 hivemq-extensionSdk = "4.7.5"
 jetbrains-annotations = "24.1.0"
 junit-jupiter = "5.10.0"
 logback = "1.5.6"
-mockito = "5.11.0"
+mockito = "5.12.0"
 owner = "1.0.12"
-testcontainers = "1.19.8"
+testcontainers = "1.20.1"
 
 [libraries]
 awaitility = { module = "org.awaitility:awaitility", version.ref = "awaitility" }
