@@ -20,6 +20,7 @@ import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobContainerClientBuilder;
 import com.azure.storage.blob.models.BlobItem;
+import io.github.sgtsilvio.gradle.oci.junit.jupiter.OciImages;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,10 +41,11 @@ import java.util.List;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
-import static com.hivemq.extensions.cluster.discovery.azure.DockerImageNames.*;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SuppressWarnings("resource")
 class AzureDiscoveryExtensionIT {
@@ -54,10 +56,11 @@ class AzureDiscoveryExtensionIT {
     private static final @NotNull String BLOB_CONTAINER_NAME = "hivemq-discovery";
 
     private final @NotNull Network network = Network.newNetwork();
-    private final @NotNull GenericContainer<?> azureriteContainer = new GenericContainer<>(AZURITE_IMAGE) //
-            .withExposedPorts(AZURITE_PORT) //
-            .withNetwork(network) //
-            .withNetworkAliases(AZURITE_NETWORK_ALIAS);
+    private final @NotNull GenericContainer<?> azureriteContainer =
+            new GenericContainer<>(OciImages.getImageName("azure-storage/azurite")) //
+                    .withExposedPorts(AZURITE_PORT) //
+                    .withNetwork(network) //
+                    .withNetworkAliases(AZURITE_NETWORK_ALIAS);
 
     @BeforeEach
     void setUp() {
@@ -116,7 +119,8 @@ class AzureDiscoveryExtensionIT {
 
     @Test
     void twoNodesInCluster_oneNodeCannotReachAzure_nodeFileDeleted() throws IOException, TimeoutException {
-        final ToxiproxyContainer toxiproxy = new ToxiproxyContainer(TOXIPROXY_IMAGE).withNetwork(network).withNetworkAliases(TOXIPROXY_NETWORK_ALIAS);
+        final ToxiproxyContainer toxiproxy = new ToxiproxyContainer(OciImages.getImageName("shopify/toxiproxy")) //
+                .withNetwork(network).withNetworkAliases(TOXIPROXY_NETWORK_ALIAS);
         try (toxiproxy) {
             toxiproxy.start();
 
@@ -272,7 +276,7 @@ class AzureDiscoveryExtensionIT {
         final Path configFile = Files.createTempDirectory("az-extension-test").resolve("azDiscovery.properties");
         Files.writeString(configFile, createConfig(connectionString));
 
-        return new HiveMQContainer(HIVEMQ_IMAGE) //
+        return new HiveMQContainer(OciImages.getImageName("hivemq/hivemq4")) //
                 .withHiveMQConfig(MountableFile.forClasspathResource("config.xml"))
                 .withExtension(MountableFile.forClasspathResource("hivemq-azure-cluster-discovery-extension"))
                 .withFileInExtensionHomeFolder(MountableFile.forHostPath(configFile),
