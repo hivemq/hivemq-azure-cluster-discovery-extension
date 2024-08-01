@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.hivemq.extension)
     alias(libs.plugins.defaults)
+    alias(libs.plugins.oci)
     alias(libs.plugins.license)
 }
 
@@ -21,10 +22,23 @@ hivemqExtension {
 
 dependencies {
     compileOnly(libs.jetbrains.annotations)
-
     hivemqProvided(libs.logback.classic)
     implementation(libs.azure.storage.blob)
     implementation(libs.owner.java8)
+}
+
+oci {
+    registries {
+        dockerHub {
+            optionalCredentials()
+        }
+        registry("mcr") {
+            url = uri("https://mcr.microsoft.com")
+            exclusiveContent {
+                includeGroup("azure-storage")
+            }
+        }
+    }
 }
 
 @Suppress("UnstableApiUsage")
@@ -46,8 +60,14 @@ testing {
                 implementation(libs.testcontainers)
                 implementation(libs.testcontainers.hivemq)
                 implementation(libs.testcontainers.toxiproxy)
+                implementation(libs.gradleOci.junitJupiter)
                 implementation(libs.azure.storage.blob)
                 runtimeOnly(libs.logback.classic)
+            }
+            ociImageDependencies {
+                runtime("hivemq:hivemq4:latest") { isChanging = true }
+                runtime("azure-storage:azurite:3.29.0").tag("latest")
+                runtime("shopify:toxiproxy:2.1.0").tag("latest")
             }
         }
     }
