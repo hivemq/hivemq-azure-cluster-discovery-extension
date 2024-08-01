@@ -37,7 +37,6 @@ testing {
             dependencies {
                 compileOnly(libs.jetbrains.annotations)
                 implementation(libs.mockito)
-                implementation(libs.awaitility)
             }
         }
         "integrationTest"(JvmTestSuite::class) {
