@@ -45,6 +45,7 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
           ORG_GRADLE_PROJECT_hivemqCommonsUsername: ${{ secrets.JENKINS_GITHUB_USERNAME }}
           ORG_GRADLE_PROJECT_hivemqCommonsPassword: ${{ secrets.JENKINS_GITHUB_TOKEN }}
+        continue-on-error: true
 
       - name: Upload sarif output
         uses: github/codeql-action/upload-sarif@v3
