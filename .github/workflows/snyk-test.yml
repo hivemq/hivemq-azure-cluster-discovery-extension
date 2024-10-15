@@ -1,0 +1,54 @@
+name: Run Snyk test on push
+
+on:
+  push:
+    branches:
+      - master**
+      - sarif-output
+
+jobs:
+  run-snyk-test:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+
+    steps:
+      - name: Setup Java
+        uses: actions/setup-java@b36c23c0d998641eff861008f374ee103c25ac73 # v4
+        with:
+          distribution: 'temurin'
+          java-version: |
+            8
+            11
+
+      - uses: hivemq/hivemq-checkout-composite-action@db2d49f686c47a1eca28b7722bc3425c0d0e5101 # v1
+        with:
+          path: hivemq-azure-cluster-discovery-extension
+          ref: ${{ github.ref_name }}}
+          token: ${{ secrets.JENKINS_GITHUB_TOKEN }}
+
+      - uses: hivemq/hivemq-checkout-composite-action@db2d49f686c47a1eca28b7722bc3425c0d0e5101 # v1
+        with:
+          repository: hivemq/hivemq-extension-sdk
+          path: hivemq-extension-sdk
+          ref: ${{ github.ref_name }}}
+          token: ${{ secrets.JENKINS_GITHUB_TOKEN }}
+
+      - name: Setup Snyk
+        uses: snyk/actions/setup@master
+
+      - name: Run Snyk test
+        shell: bash
+        run: >
+          snyk test --configuration-matching=^runtimeClasspath$ --org=hivemqgmbhnxlfpb2wza --sarif-file-output=sarif-output -d hivemq-azure-cluster-discovery-extension
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+          ORG_GRADLE_PROJECT_hivemqCommonsUsername: ${{ secrets.JENKINS_GITHUB_USERNAME }}
+          ORG_GRADLE_PROJECT_hivemqCommonsPassword: ${{ secrets.JENKINS_GITHUB_TOKEN }}
+
+      - name: Upload sarif output
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: sarif-output
+          category: snyk-cve-scan
+          
