@@ -34,9 +34,6 @@ import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.MountableFile;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
@@ -74,7 +71,7 @@ class AzureDiscoveryExtensionIT {
     }
 
     @Test
-    void threeNodesFormCluster() throws IOException, TimeoutException {
+    void threeNodesFormCluster() throws TimeoutException {
         final WaitingConsumer consumer1 = new WaitingConsumer();
         final WaitingConsumer consumer2 = new WaitingConsumer();
         final WaitingConsumer consumer3 = new WaitingConsumer();
@@ -95,7 +92,7 @@ class AzureDiscoveryExtensionIT {
     }
 
     @Test
-    void twoNodesInCluster_oneNodeStarted_threeNodesInCluster() throws IOException, TimeoutException {
+    void twoNodesInCluster_oneNodeStarted_threeNodesInCluster() throws TimeoutException {
         final WaitingConsumer consumer1 = new WaitingConsumer();
         final WaitingConsumer consumer2 = new WaitingConsumer();
         final WaitingConsumer consumer3 = new WaitingConsumer();
@@ -118,7 +115,7 @@ class AzureDiscoveryExtensionIT {
     }
 
     @Test
-    void twoNodesInCluster_oneNodeCannotReachAzure_nodeFileDeleted() throws IOException, TimeoutException {
+    void twoNodesInCluster_oneNodeCannotReachAzure_nodeFileDeleted() throws TimeoutException {
         final ToxiproxyContainer toxiproxy = new ToxiproxyContainer(OciImages.getImageName("shopify/toxiproxy")) //
                 .withNetwork(network).withNetworkAliases(TOXIPROXY_NETWORK_ALIAS);
         try (toxiproxy) {
@@ -153,7 +150,7 @@ class AzureDiscoveryExtensionIT {
     }
 
     @Test
-    void threeNodesInCluster_oneNodeStopped_twoNodesInCluster() throws IOException, TimeoutException {
+    void threeNodesInCluster_oneNodeStopped_twoNodesInCluster() throws TimeoutException {
         final WaitingConsumer consumer1 = new WaitingConsumer();
         final WaitingConsumer consumer2 = new WaitingConsumer();
         final WaitingConsumer consumer3 = new WaitingConsumer();
@@ -187,7 +184,7 @@ class AzureDiscoveryExtensionIT {
     }
 
     @Test
-    void wrongConnectionString_reloadRightConnectionString_clusterCreated() throws IOException, TimeoutException {
+    void wrongConnectionString_reloadRightConnectionString_clusterCreated() throws TimeoutException {
         final String wrongConnectionString = "DefaultEndpointsProtocol=http;" + //
                 "AccountName=devstoreaccount1;" +
                 "AccountKey=XXX8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;" +
@@ -211,7 +208,7 @@ class AzureDiscoveryExtensionIT {
     }
 
     @Test
-    void containerNotExisting_nodeStarted_containerCreated() throws IOException {
+    void containerNotExisting_nodeStarted_containerCreated() {
         final BlobContainerClient blobContainerClient = new BlobContainerClientBuilder().connectionString(createHostAzuriteConnectionString())
                 .containerName(BLOB_CONTAINER_NAME)
                 .buildClient();
@@ -228,7 +225,7 @@ class AzureDiscoveryExtensionIT {
     }
 
     @Test
-    void containerExisting_nodeStarted_containerUsed() throws IOException {
+    void containerExisting_nodeStarted_containerUsed() {
         final BlobContainerClient blobContainerClient = new BlobContainerClientBuilder().connectionString(createHostAzuriteConnectionString())
                 .containerName(BLOB_CONTAINER_NAME)
                 .buildClient();
@@ -271,20 +268,16 @@ class AzureDiscoveryExtensionIT {
         return createAzuriteConnectionString("127.0.0.1", azureriteContainer.getMappedPort(AZURITE_PORT));
     }
 
-    private @NotNull HiveMQContainer createHiveMQNode(final @NotNull String connectionString) throws IOException {
-
-        final Path configFile = Files.createTempDirectory("az-extension-test").resolve("azDiscovery.properties");
-        Files.writeString(configFile, createConfig(connectionString));
-
-        return new HiveMQContainer(OciImages.getImageName("hivemq/hivemq4")) //
+    private @NotNull HiveMQContainer createHiveMQNode(final @NotNull String connectionString) {
+        return new HiveMQContainer(OciImages.getImageName("hivemq/extensions/hivemq-azure-cluster-discovery-extension")
+                .asCompatibleSubstituteFor("hivemq/hivemq4")) //
                 .withHiveMQConfig(MountableFile.forClasspathResource("config.xml"))
-                .withExtension(MountableFile.forClasspathResource("hivemq-azure-cluster-discovery-extension"))
-                .withFileInExtensionHomeFolder(MountableFile.forHostPath(configFile),
-                        "hivemq-azure-cluster-discovery-extension")
+                .withCopyToContainer(Transferable.of(createConfig(connectionString)),
+                        "/opt/hivemq/extensions/hivemq-azure-cluster-discovery-extension/azDiscovery.properties")
                 .withNetwork(network);
     }
 
-    private @NotNull HiveMQContainer createHiveMQNode() throws IOException {
+    private @NotNull HiveMQContainer createHiveMQNode() {
         return createHiveMQNode(createDockerAzuriteConnectionString());
     }
 }
