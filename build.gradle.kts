@@ -39,6 +39,29 @@ oci {
             }
         }
     }
+    imageMapping {
+        mapModule("com.hivemq", "hivemq-enterprise") {
+            toImage("hivemq/hivemq4")
+        }
+    }
+    imageDefinitions.register("main") {
+        allPlatforms {
+            dependencies {
+                runtime("com.hivemq:hivemq-enterprise:latest") { isChanging = true }
+            }
+            layers {
+                layer("hivemqExtension") {
+                    contents {
+                        permissions("opt/hivemq/", 0b111_111_000)
+                        permissions("opt/hivemq/extensions/", 0b111_111_000)
+                        into("opt/hivemq/extensions") {
+                            from(zipTree(tasks.hivemqExtensionZip.flatMap { it.archiveFile }))
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 @Suppress("UnstableApiUsage")
@@ -66,7 +89,7 @@ testing {
             }
             oci.of(this) {
                 imageDependencies {
-                    runtime("hivemq:hivemq4:latest") { isChanging = true }
+                    runtime(project).tag("latest")
                     runtime("azure-storage:azurite:3.33.0").tag("latest")
                     runtime("shopify:toxiproxy:2.1.0").tag("latest")
                 }
