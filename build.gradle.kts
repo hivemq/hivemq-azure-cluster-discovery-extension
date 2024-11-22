@@ -67,7 +67,7 @@ testing {
             oci.of(this) {
                 imageDependencies {
                     runtime("hivemq:hivemq4:latest") { isChanging = true }
-                    runtime("azure-storage:azurite:3.29.0").tag("latest")
+                    runtime("azure-storage:azurite:3.33.0").tag("latest")
                     runtime("shopify:toxiproxy:2.1.0").tag("latest")
                 }
             }
