@@ -1,5 +1,5 @@
 [versions]
-awaitility = "4.2.2"
+awaitility = "4.3.0"
 azure-storage-blob = "12.29.0"
 gradleOci-junitJupiter = "0.6.0"
 hivemq-extensionSdk = "4.7.5"
