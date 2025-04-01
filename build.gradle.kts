@@ -88,7 +88,7 @@ testing {
             oci.of(this) {
                 imageDependencies {
                     runtime(project).tag("latest")
-                    runtime("azure-storage:azurite:3.33.0").tag("latest")
+                    runtime("azure-storage:azurite:3.34.0").tag("latest")
                     runtime("shopify:toxiproxy:2.1.0").tag("latest")
                 }
             }
