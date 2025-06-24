@@ -37,7 +37,7 @@
     },
     "hivemqVersion": {
       "type": "string",
-      "defaultValue": "4.40.1",
+      "defaultValue": "4.40.2",
       "metadata": {
         "description": "The HiveMQ Version"
       }
