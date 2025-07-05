@@ -42,5 +42,4 @@ public interface AzureDiscoveryConfig extends Config {
     @Key("update-interval")
     @DefaultValue("180")
     @NotNull Integer getFileUpdateIntervalInSeconds();
-
 }

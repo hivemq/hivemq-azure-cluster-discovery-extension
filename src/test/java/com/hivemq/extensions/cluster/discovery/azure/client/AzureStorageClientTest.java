@@ -27,14 +27,22 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.nio.file.Path;
 import java.util.Objects;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyBoolean;
+import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class AzureStorageClientTest {
 
@@ -42,15 +50,14 @@ class AzureStorageClientTest {
     private @NotNull AzureStorageClient azStorageClient;
 
     @TempDir
-    @NotNull File temporaryFolder;
+    @NotNull Path temporaryFolder;
 
     @BeforeEach
     void setUp() throws IOException {
         extensionInformation = mock(ExtensionInformation.class);
+        when(extensionInformation.getExtensionHomeFolder()).thenReturn(temporaryFolder.toFile());
 
-        when(extensionInformation.getExtensionHomeFolder()).thenReturn(temporaryFolder);
-
-        try (final PrintWriter printWriter = new PrintWriter(new File(temporaryFolder, ConfigReader.STORAGE_FILE))) {
+        try (final var printWriter = new PrintWriter(temporaryFolder.resolve(ConfigReader.STORAGE_FILE).toFile())) {
             printWriter.println(
                     "connection-string:DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;QueueEndpoint=http://127.0.0.1:10001/devstoreaccount1;");
             printWriter.println("container-name:hivemq-blob-container");
@@ -59,39 +66,35 @@ class AzureStorageClientTest {
             printWriter.println("update-interval:180");
         }
 
-        final ConfigReader configurationReader = new ConfigReader(extensionInformation);
+        final var configurationReader = new ConfigReader(extensionInformation);
         azStorageClient = new AzureStorageClient(configurationReader);
     }
 
     @Test
     void test_create_successful() {
         azStorageClient.createOrUpdate();
-        assertNotNull(azStorageClient.getStorageConfig());
-        assertNotNull(azStorageClient.getContainerClient());
+        assertThat(azStorageClient.getStorageConfig()).isNotNull();
+        assertThat(azStorageClient.getContainerClient()).isNotNull();
     }
 
     @Test
     void test_container_exists() {
         azStorageClient.createOrUpdate();
-        final BlobContainerClient containerClient = Mockito.mock(BlobContainerClient.class);
+        final var containerClient = Mockito.mock(BlobContainerClient.class);
         azStorageClient.setContainerClient(containerClient);
 
         when(containerClient.exists()).thenReturn(true);
-        final boolean containerExists = azStorageClient.existsContainer();
-
-        assertTrue(containerExists);
+        assertThat(azStorageClient.existsContainer()).isTrue();
     }
 
     @Test
     void test_container_does_not_exist() {
         azStorageClient.createOrUpdate();
-        final BlobContainerClient containerClient = Mockito.mock(BlobContainerClient.class);
+        final var containerClient = Mockito.mock(BlobContainerClient.class);
         azStorageClient.setContainerClient(containerClient);
 
         when(containerClient.exists()).thenReturn(false);
-        final boolean containerExists = azStorageClient.existsContainer();
-
-        assertFalse(containerExists);
+        assertThat(azStorageClient.existsContainer()).isFalse();
     }
 
     @Test
@@ -100,38 +103,35 @@ class AzureStorageClientTest {
         final ConfigReader configurationReader = new ConfigReader(extensionInformation);
         azStorageClient = new AzureStorageClient(configurationReader);
 
-        assertThrows(IllegalStateException.class, () -> azStorageClient.createOrUpdate());
+        assertThatThrownBy(() -> azStorageClient.createOrUpdate()).isInstanceOf(IllegalStateException.class);
     }
 
     @Test
     void test_create_invalid_config() throws IOException {
         deleteFilesInTemporaryFolder();
-        try (final PrintWriter printWriter = new PrintWriter(new File(temporaryFolder, ConfigReader.STORAGE_FILE))) {
+        try (final var printWriter = new PrintWriter(temporaryFolder.resolve(ConfigReader.STORAGE_FILE).toFile())) {
             printWriter.println("");
         }
-        final ConfigReader configurationReader = new ConfigReader(extensionInformation);
+        final var configurationReader = new ConfigReader(extensionInformation);
         azStorageClient = new AzureStorageClient(configurationReader);
-        assertThrows(IllegalStateException.class, () -> azStorageClient.createOrUpdate());
-
+        assertThatThrownBy(() -> azStorageClient.createOrUpdate()).isInstanceOf(IllegalStateException.class);
     }
 
     private void deleteFilesInTemporaryFolder() {
-        for (final File file : Objects.requireNonNull(temporaryFolder.listFiles())) {
-            assertTrue(file.delete());
+        for (final var file : Objects.requireNonNull(temporaryFolder.toFile().listFiles())) {
+            assertThat(file.delete()).isTrue();
         }
     }
 
     @Test
     void test_saveBlob_success() {
-        final BlobClient blobClient = mock(BlobClient.class);
-
+        final var blobClient = mock(BlobClient.class);
         azStorageClient.createOrUpdate();
 
-        final BlobContainerClient containerClient = Mockito.mock(BlobContainerClient.class);
+        final var containerClient = Mockito.mock(BlobContainerClient.class);
         azStorageClient.setContainerClient(containerClient);
 
         when(containerClient.getBlobClient(any())).thenReturn(blobClient);
-
         doNothing().when(blobClient).upload(any(), anyLong(), anyBoolean());
 
         azStorageClient.saveBlob("abcd", "test");
@@ -139,10 +139,10 @@ class AzureStorageClientTest {
 
     @Test
     void test_getBlobContent_success() {
-        final BlobClient blobClient = mock(BlobClient.class);
+        final var blobClient = mock(BlobClient.class);
         azStorageClient.createOrUpdate();
 
-        final BlobContainerClient containerClient = Mockito.mock(BlobContainerClient.class);
+        final var containerClient = Mockito.mock(BlobContainerClient.class);
         azStorageClient.setContainerClient(containerClient);
 
         when(containerClient.getBlobClient(anyString())).thenReturn(blobClient);
@@ -152,22 +152,21 @@ class AzureStorageClientTest {
             return null;
         }).when(blobClient).downloadStream(any());
 
-        final String blobContent = azStorageClient.getBlobContent("abcd");
-        assertNotNull(blobContent);
-        assertFalse(blobContent.isEmpty());
+        final var blobContent = azStorageClient.getBlobContent("abcd");
+        assertThat(blobContent).isNotEmpty();
     }
 
     @Test
     void test_deleteObject_success() {
-        final BlobClient blobClient = mock(BlobClient.class);
+        final var blobClient = mock(BlobClient.class);
         azStorageClient.createOrUpdate();
 
-        final BlobContainerClient containerClient = Mockito.mock(BlobContainerClient.class);
+        final var containerClient = Mockito.mock(BlobContainerClient.class);
         azStorageClient.setContainerClient(containerClient);
 
         when(containerClient.getBlobClient(anyString())).thenReturn(blobClient);
-
         doNothing().when(blobClient).delete();
+
         azStorageClient.deleteBlob("abcd");
     }
 }

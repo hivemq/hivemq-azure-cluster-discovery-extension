@@ -16,7 +16,6 @@
 
 package com.hivemq.extensions.cluster.discovery.azure.callback;
 
-import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.models.BlobItem;
 import com.hivemq.extension.sdk.api.parameter.ExtensionInformation;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryInput;
@@ -31,9 +30,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import java.io.File;
 import java.io.PrintWriter;
 import java.io.UncheckedIOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -51,29 +50,25 @@ import static org.mockito.Mockito.when;
 
 class AzureClusterDiscoveryCallbackTest {
 
-    private @NotNull ExtensionInformation extensionInformation;
-    private @NotNull AzureStorageClient azStorageClient;
-    private @NotNull ClusterDiscoveryInput clusterDiscoveryInput;
-    private @NotNull ClusterDiscoveryOutput clusterDiscoveryOutput;
+    private final @NotNull ExtensionInformation extensionInformation = mock();
+    private final @NotNull AzureStorageClient azStorageClient = mock();
+    private final @NotNull ClusterDiscoveryInput clusterDiscoveryInput = mock();
+    private final @NotNull ClusterDiscoveryOutput clusterDiscoveryOutput = mock();
+
     private @NotNull AzureClusterDiscoveryCallback azureClusterDiscoveryCallback;
     private @NotNull ConfigReader configurationReader;
 
     @TempDir
-    @NotNull File temporaryFolder;
+    @NotNull Path temporaryFolder;
 
     @BeforeEach
     void setUp() throws Exception {
-        extensionInformation = mock(ExtensionInformation.class);
-        azStorageClient = mock(AzureStorageClient.class);
-        clusterDiscoveryInput = mock(ClusterDiscoveryInput.class);
-        clusterDiscoveryOutput = mock(ClusterDiscoveryOutput.class);
-
         when(clusterDiscoveryInput.getOwnClusterId()).thenReturn("ABCD12");
         when(clusterDiscoveryInput.getOwnAddress()).thenReturn(new ClusterNodeAddress("127.0.0.1", 7800));
 
-        when(extensionInformation.getExtensionHomeFolder()).thenReturn(temporaryFolder);
+        when(extensionInformation.getExtensionHomeFolder()).thenReturn(temporaryFolder.toFile());
 
-        try (final PrintWriter printWriter = new PrintWriter(new File(temporaryFolder, ConfigReader.STORAGE_FILE))) {
+        try (final var printWriter = new PrintWriter(temporaryFolder.resolve(ConfigReader.STORAGE_FILE).toFile())) {
             printWriter.println("connection-string:https://my-connection-string");
             printWriter.println("container-name:hivemq-blob-container");
             printWriter.println("file-prefix:hivemq-cluster");
@@ -86,7 +81,7 @@ class AzureClusterDiscoveryCallbackTest {
         when(azStorageClient.getConfigReader()).thenReturn(configurationReader);
 
         azStorageClient.getConfigReader().readConfiguration();
-        when(azStorageClient.getContainerClient()).thenReturn(mock(BlobContainerClient.class));
+        when(azStorageClient.getContainerClient()).thenReturn(mock());
 
         final AzureDiscoveryConfig azAzureDiscoveryConfig = configurationReader.readConfiguration();
         when(azStorageClient.getStorageConfig()).thenReturn(azAzureDiscoveryConfig);
@@ -162,16 +157,16 @@ class AzureClusterDiscoveryCallbackTest {
 
     @Test
     void test_init_provide_current_nodes_expired_files() throws Exception {
-        deleteFilesInTemporaryFolder();
+        deleteFilesIn(temporaryFolder);
 
-        try (final PrintWriter printWriter = new PrintWriter(new File(temporaryFolder, ConfigReader.STORAGE_FILE))) {
+        try (final var printWriter = new PrintWriter(temporaryFolder.resolve(ConfigReader.STORAGE_FILE).toFile())) {
             printWriter.println("connection-string:https://my-connection-string");
             printWriter.println("container-name:hivemq-blob-container");
             printWriter.println("file-prefix:hivemq-cluster");
             printWriter.println("file-expiration:2");
             printWriter.println("update-interval:1");
         }
-        final AzureDiscoveryConfig azureDiscoveryConfig = new ConfigReader(extensionInformation).readConfiguration();
+        final var azureDiscoveryConfig = new ConfigReader(extensionInformation).readConfiguration();
         when(azStorageClient.getStorageConfig()).thenReturn(azureDiscoveryConfig);
 
         when(azStorageClient.getBlobs(any())).thenReturn(createBlobItemIterator());
@@ -181,7 +176,7 @@ class AzureClusterDiscoveryCallbackTest {
                 "3",
                 "3"));
 
-        // Wait for files to expire
+        // wait for files to expire
         TimeUnit.SECONDS.sleep(2);
 
         azureClusterDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
@@ -249,7 +244,6 @@ class AzureClusterDiscoveryCallbackTest {
 
     @Test
     void test_init_container_does_not_exist_is_created() {
-
         when(azStorageClient.existsContainer()).thenReturn(false);
 
         azureClusterDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
@@ -263,7 +257,6 @@ class AzureClusterDiscoveryCallbackTest {
 
     @Test
     void test_init_create_failed_config() {
-
         doThrow(new IllegalStateException("Config is not valid.")).when(azStorageClient).createOrUpdate();
 
         azureClusterDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
@@ -276,7 +269,6 @@ class AzureClusterDiscoveryCallbackTest {
 
     @Test
     void test_init_container_created_success() {
-
         when(azStorageClient.existsContainer()).thenReturn(false);
 
         azureClusterDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
@@ -290,17 +282,16 @@ class AzureClusterDiscoveryCallbackTest {
 
     @Test
     void test_init_config_invalid() throws Exception {
+        deleteFilesIn(temporaryFolder);
 
-        deleteFilesInTemporaryFolder();
-
-        try (final PrintWriter printWriter = new PrintWriter(new File(temporaryFolder, ConfigReader.STORAGE_FILE))) {
+        try (final var printWriter = new PrintWriter(temporaryFolder.resolve(ConfigReader.STORAGE_FILE).toFile())) {
             printWriter.println("connection-string:https://my-connection-string");
             printWriter.println("container-name:hivemq-blob-container");
             printWriter.println("file-prefix:hivemq-cluster");
             printWriter.println("file-expiration:360");
             printWriter.println("update-interval:180");
         }
-        final AzureDiscoveryConfig azureDiscoveryConfig = new ConfigReader(extensionInformation).readConfiguration();
+        final var azureDiscoveryConfig = new ConfigReader(extensionInformation).readConfiguration();
         when(azStorageClient.getStorageConfig()).thenReturn(azureDiscoveryConfig);
         doThrow(IllegalStateException.class).when(azStorageClient).createOrUpdate();
 
@@ -312,7 +303,7 @@ class AzureClusterDiscoveryCallbackTest {
 
     @Test
     void test_init_no_config() {
-        temporaryFolder.delete();
+        deleteFilesIn(temporaryFolder);
 
         azureClusterDiscoveryCallback = new AzureClusterDiscoveryCallback(configurationReader);
         azureClusterDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
@@ -322,7 +313,6 @@ class AzureClusterDiscoveryCallbackTest {
 
     @Test
     void test_reload_success_same_config() {
-
         azureClusterDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
         azureClusterDiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
 
@@ -333,16 +323,16 @@ class AzureClusterDiscoveryCallbackTest {
     void test_reload_success_new_config() throws Exception {
         azureClusterDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
-        deleteFilesInTemporaryFolder();
+        deleteFilesIn(temporaryFolder);
 
-        try (final PrintWriter printWriter = new PrintWriter(new File(temporaryFolder, ConfigReader.STORAGE_FILE))) {
+        try (final var printWriter = new PrintWriter(temporaryFolder.resolve(ConfigReader.STORAGE_FILE).toFile())) {
             printWriter.println("connection-string:https://my-connection-string");
             printWriter.println("container-name:hivemq-blob-container");
             printWriter.println("file-prefix:hivemq-cluster");
             printWriter.println("file-expiration:120");
             printWriter.println("update-interval:60");
         }
-        final AzureDiscoveryConfig azureDiscoveryConfig = new ConfigReader(extensionInformation).readConfiguration();
+        final var azureDiscoveryConfig = new ConfigReader(extensionInformation).readConfiguration();
         when(azStorageClient.getStorageConfig()).thenReturn(azureDiscoveryConfig);
 
         azureClusterDiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
@@ -352,18 +342,18 @@ class AzureClusterDiscoveryCallbackTest {
 
     @Test
     void test_reload_new_config_missing_container_is_created() throws Exception {
-        temporaryFolder.delete();
+        deleteFilesIn(temporaryFolder);
         azureClusterDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
-        deleteFilesInTemporaryFolder();
+        deleteFilesIn(temporaryFolder);
 
-        try (final PrintWriter printWriter = new PrintWriter(new File(temporaryFolder, ConfigReader.STORAGE_FILE))) {
+        try (final var printWriter = new PrintWriter(temporaryFolder.resolve(ConfigReader.STORAGE_FILE).toFile())) {
             printWriter.println("connection-string:https://my-connection-string");
             printWriter.println("container-name:hivemq-blob-container");
             printWriter.println("file-prefix:hivemq-cluster");
             printWriter.println("file-expiration:120");
             printWriter.println("update-interval:60");
         }
-        final AzureDiscoveryConfig azureDiscoveryConfig = new ConfigReader(extensionInformation).readConfiguration();
+        final var azureDiscoveryConfig = new ConfigReader(extensionInformation).readConfiguration();
         when(azStorageClient.getStorageConfig()).thenReturn(azureDiscoveryConfig);
         when(azStorageClient.existsContainer()).thenReturn(false);
 
@@ -376,7 +366,7 @@ class AzureClusterDiscoveryCallbackTest {
     void test_reload_config_missing_init_success() {
         azureClusterDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
-        deleteFilesInTemporaryFolder();
+        deleteFilesIn(temporaryFolder);
 
         azureClusterDiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
 
@@ -385,7 +375,7 @@ class AzureClusterDiscoveryCallbackTest {
 
     @Test
     void test_reload_config_still_missing() {
-        temporaryFolder.delete();
+        deleteFilesIn(temporaryFolder);
         when(azStorageClient.getStorageConfig()).thenReturn(null);
         doThrow(IllegalStateException.class).when(azStorageClient).createOrUpdate();
 
@@ -396,21 +386,21 @@ class AzureClusterDiscoveryCallbackTest {
 
     @Test
     void test_reload_file_expired() throws Exception {
-        deleteFilesInTemporaryFolder();
+        deleteFilesIn(temporaryFolder);
 
-        try (final PrintWriter printWriter = new PrintWriter(new File(temporaryFolder, ConfigReader.STORAGE_FILE))) {
+        try (final var printWriter = new PrintWriter(temporaryFolder.resolve(ConfigReader.STORAGE_FILE).toFile())) {
             printWriter.println("connection-string:https://my-connection-string");
             printWriter.println("container-name:hivemq-blob-container");
             printWriter.println("file-prefix:hivemq-cluster");
             printWriter.println("file-expiration:5");
             printWriter.println("update-interval:1");
         }
-        final AzureDiscoveryConfig azureDiscoveryConfig = new ConfigReader(extensionInformation).readConfiguration();
+        final var azureDiscoveryConfig = new ConfigReader(extensionInformation).readConfiguration();
         when(azStorageClient.getStorageConfig()).thenReturn(azureDiscoveryConfig);
 
         azureClusterDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
-        // Wait for file to expire
+        // wait for file to expire
         TimeUnit.SECONDS.sleep(1);
 
         azureClusterDiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
@@ -421,21 +411,21 @@ class AzureClusterDiscoveryCallbackTest {
 
     @Test
     void test_reload_file_exception() throws Exception {
-        deleteFilesInTemporaryFolder();
+        deleteFilesIn(temporaryFolder);
 
-        try (final PrintWriter printWriter = new PrintWriter(new File(temporaryFolder, ConfigReader.STORAGE_FILE))) {
+        try (final var printWriter = new PrintWriter(temporaryFolder.resolve(ConfigReader.STORAGE_FILE).toFile())) {
             printWriter.println("connection-string:https://my-connection-string");
             printWriter.println("container-name:hivemq-blob-container");
             printWriter.println("file-prefix:hivemq-cluster");
             printWriter.println("file-expiration:5");
             printWriter.println("update-interval:1");
         }
-        final AzureDiscoveryConfig azureDiscoveryConfig = new ConfigReader(extensionInformation).readConfiguration();
+        final var azureDiscoveryConfig = new ConfigReader(extensionInformation).readConfiguration();
         when(azStorageClient.getStorageConfig()).thenReturn(azureDiscoveryConfig);
 
         azureClusterDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
-        // Wait for file to expire
+        // wait for file to expire
         TimeUnit.SECONDS.sleep(1);
         doThrow(RuntimeException.class).when(azStorageClient).saveBlob(any(), any());
 
@@ -477,16 +467,17 @@ class AzureClusterDiscoveryCallbackTest {
         verify(azStorageClient, times(1)).deleteBlob(any());
     }
 
-    private void deleteFilesInTemporaryFolder() {
-        final String root = temporaryFolder.getAbsolutePath();
-        // deletes also root folder
-        temporaryFolder.delete();
-        // restore root folder
-        new File(root).mkdir();
+    private void deleteFilesIn(final @NotNull Path folder) {
+        final var files = folder.toFile().listFiles();
+        if (files != null) {
+            for (final var file : files) {
+                deleteFilesIn(file.toPath());
+            }
+        }
     }
 
-    @NotNull Iterator<BlobItem> createBlobItemIterator() {
-        final BlobItem blobItem = new BlobItem();
+    private @NotNull Iterator<BlobItem> createBlobItemIterator() {
+        final var blobItem = new BlobItem();
         blobItem.setName("ABCD12");
         return List.of(blobItem).iterator();
     }

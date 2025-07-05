@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
  */
 public class AzureClusterDiscoveryExtensionMain implements ExtensionMain {
 
-    private static final @NotNull Logger logger = LoggerFactory.getLogger(AzureClusterDiscoveryExtensionMain.class);
+    private static final @NotNull Logger log = LoggerFactory.getLogger(AzureClusterDiscoveryExtensionMain.class);
 
     @Nullable AzureClusterDiscoveryCallback azureClusterDiscoveryCallback;
 
@@ -42,12 +42,11 @@ public class AzureClusterDiscoveryExtensionMain implements ExtensionMain {
     public void extensionStart(
             final @NotNull ExtensionStartInput extensionStartInput,
             final @NotNull ExtensionStartOutput extensionStartOutput) {
-
         try {
-            final ConfigReader configReader = new ConfigReader(extensionStartInput.getExtensionInformation());
+            final var configReader = new ConfigReader(extensionStartInput.getExtensionInformation());
             azureClusterDiscoveryCallback = new AzureClusterDiscoveryCallback(configReader);
             Services.clusterService().addDiscoveryCallback(azureClusterDiscoveryCallback);
-            logger.debug("Registered Azure Cluster Discovery Callback successfully.");
+            log.debug("Registered Azure Cluster Discovery Callback successfully.");
         } catch (final UnsupportedOperationException e) {
             extensionStartOutput.preventExtensionStartup(e.getMessage());
         } catch (final Exception e) {
@@ -58,7 +57,8 @@ public class AzureClusterDiscoveryExtensionMain implements ExtensionMain {
 
     @Override
     public void extensionStop(
-            @NotNull ExtensionStopInput extensionStopInput, @NotNull ExtensionStopOutput extensionStopOutput) {
+            final @NotNull ExtensionStopInput extensionStopInput,
+            final @NotNull ExtensionStopOutput extensionStopOutput) {
         if (azureClusterDiscoveryCallback != null) {
             Services.clusterService().removeDiscoveryCallback(azureClusterDiscoveryCallback);
         }

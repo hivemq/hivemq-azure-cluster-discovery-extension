@@ -16,7 +16,11 @@
 
 package com.hivemq.extensions.cluster.discovery.azure;
 
-import com.hivemq.extension.sdk.api.parameter.*;
+import com.hivemq.extension.sdk.api.parameter.ExtensionInformation;
+import com.hivemq.extension.sdk.api.parameter.ExtensionStartInput;
+import com.hivemq.extension.sdk.api.parameter.ExtensionStartOutput;
+import com.hivemq.extension.sdk.api.parameter.ExtensionStopInput;
+import com.hivemq.extension.sdk.api.parameter.ExtensionStopOutput;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,7 +28,8 @@ import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -33,21 +38,16 @@ class AzureClusterDiscoveryExtensionMainTest {
     @TempDir
     @NotNull File temporaryFolder;
 
-    private @NotNull ExtensionStartInput extensionStartInput;
-    private @NotNull ExtensionStartOutput extensionStartOutput;
-    private @NotNull ExtensionStopInput extensionStopInput;
-    private @NotNull ExtensionStopOutput extensionStopOutput;
-    private @NotNull ExtensionInformation extensionInformation;
+    private final @NotNull ExtensionStartInput extensionStartInput = mock();
+    private final @NotNull ExtensionStartOutput extensionStartOutput = mock();
+    private final @NotNull ExtensionStopInput extensionStopInput = mock();
+    private final @NotNull ExtensionStopOutput extensionStopOutput = mock();
+    private final @NotNull ExtensionInformation extensionInformation = mock();
+
     private @NotNull AzureClusterDiscoveryExtensionMain azureClusterDiscoveryExtensionMain;
 
     @BeforeEach
     void setUp() {
-        extensionStartInput = mock(ExtensionStartInput.class);
-        extensionStartOutput = mock(ExtensionStartOutput.class);
-        extensionStopInput = mock(ExtensionStopInput.class);
-        extensionStopOutput = mock(ExtensionStopOutput.class);
-        extensionInformation = mock(ExtensionInformation.class);
-
         when(extensionStartInput.getExtensionInformation()).thenReturn(extensionInformation);
         when(extensionInformation.getExtensionHomeFolder()).thenReturn(temporaryFolder);
         azureClusterDiscoveryExtensionMain = new AzureClusterDiscoveryExtensionMain();
@@ -56,29 +56,31 @@ class AzureClusterDiscoveryExtensionMainTest {
     @Test
     void test_start_success() {
         azureClusterDiscoveryExtensionMain.extensionStart(extensionStartInput, extensionStartOutput);
-        assertNotNull(azureClusterDiscoveryExtensionMain.azureClusterDiscoveryCallback);
+        assertThat(azureClusterDiscoveryExtensionMain.azureClusterDiscoveryCallback).isNotNull();
     }
 
     @Test
     void test_start_failed() {
         when(extensionInformation.getExtensionHomeFolder()).thenThrow(new NullPointerException());
+
         azureClusterDiscoveryExtensionMain.extensionStart(extensionStartInput, extensionStartOutput);
-        assertNull(azureClusterDiscoveryExtensionMain.azureClusterDiscoveryCallback);
+        assertThat(azureClusterDiscoveryExtensionMain.azureClusterDiscoveryCallback).isNull();
     }
 
     @Test
     void test_stop_success() {
-        assertThrows(RuntimeException.class, () -> {
+        assertThatThrownBy(() -> {
             azureClusterDiscoveryExtensionMain.extensionStart(extensionStartInput, extensionStartOutput);
             azureClusterDiscoveryExtensionMain.extensionStop(extensionStopInput, extensionStopOutput);
-        });
+        }).isInstanceOf(RuntimeException.class);
     }
 
     @Test
     void test_stop_no_start_failed() {
         when(extensionInformation.getExtensionHomeFolder()).thenThrow(new NullPointerException());
+
         azureClusterDiscoveryExtensionMain.extensionStart(extensionStartInput, extensionStartOutput);
         azureClusterDiscoveryExtensionMain.extensionStop(extensionStopInput, extensionStopOutput);
-        assertNull(azureClusterDiscoveryExtensionMain.azureClusterDiscoveryCallback);
+        assertThat(azureClusterDiscoveryExtensionMain.azureClusterDiscoveryCallback).isNull();
     }
 }

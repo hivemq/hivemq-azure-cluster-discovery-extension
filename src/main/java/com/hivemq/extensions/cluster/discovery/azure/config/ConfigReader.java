@@ -27,7 +27,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Properties;
 
 public class ConfigReader {
@@ -43,19 +42,16 @@ public class ConfigReader {
     }
 
     private static boolean isValid(final @NotNull AzureDiscoveryConfig azureDiscoveryConfig) {
-
-        final String connectionString = azureDiscoveryConfig.getConnectionString();
+        final var connectionString = azureDiscoveryConfig.getConnectionString();
         if (isNullOrBlank(connectionString)) {
             logger.warn("The Connection String in the configuration file was empty.");
             return false;
         }
-
-        final String containerName = azureDiscoveryConfig.getContainerName();
+        final var containerName = azureDiscoveryConfig.getContainerName();
         if (isNullOrBlank(containerName)) {
             logger.warn("The Container Name in the configuration file was empty.");
             return false;
         }
-
         final long fileExpirationInSeconds;
         try {
             fileExpirationInSeconds = azureDiscoveryConfig.getFileExpirationInSeconds();
@@ -67,7 +63,6 @@ public class ConfigReader {
             logger.warn("The File Expiration Interval in the configuration file was negative.");
             return false;
         }
-
         final long fileUpdateIntervalInSeconds;
         try {
             fileUpdateIntervalInSeconds = azureDiscoveryConfig.getFileUpdateIntervalInSeconds();
@@ -79,31 +74,24 @@ public class ConfigReader {
             logger.warn("The File Update Interval in the configuration file was negative.");
             return false;
         }
-
         if (!(fileUpdateIntervalInSeconds == 0 && fileExpirationInSeconds == 0)) {
-
             if (fileUpdateIntervalInSeconds == fileExpirationInSeconds) {
                 logger.warn("The File Update Interval is the same as the File Expiration Interval.");
                 return false;
             }
-
             if (fileUpdateIntervalInSeconds == 0) {
                 logger.warn("The File Update Interval is deactivated but the File Expiration Interval is set.");
                 return false;
             }
-
             if (fileExpirationInSeconds == 0) {
                 logger.warn("The File Expiration Interval is deactivated but the File Update Interval is set.");
                 return false;
             }
-
             if (!(fileUpdateIntervalInSeconds < fileExpirationInSeconds)) {
                 logger.warn("The File Update Interval is larger than the File Expiration Interval.");
                 return false;
             }
         }
-
-
         return true;
     }
 
@@ -112,31 +100,24 @@ public class ConfigReader {
     }
 
     public @Nullable AzureDiscoveryConfig readConfiguration() {
-
-        final File propertiesFile = new File(extensionHomeFolder, STORAGE_FILE);
-
+        final var propertiesFile = new File(extensionHomeFolder, STORAGE_FILE);
         if (!propertiesFile.exists()) {
             logger.warn("Could not find '{}'. Please verify that the properties file is located under '{}'.",
                     STORAGE_FILE,
                     extensionHomeFolder);
             return null;
         }
-
         if (!propertiesFile.canRead()) {
             logger.warn(
                     "Could not read '{}'. Please verify that the user running HiveMQ has reading permissions for it.",
                     propertiesFile.getAbsolutePath());
             return null;
         }
-
-        try (final InputStream inputStream = new FileInputStream(propertiesFile)) {
-
+        try (final var inputStream = new FileInputStream(propertiesFile)) {
             logger.debug("Reading properties file '{}'.", propertiesFile.getAbsolutePath());
-            final Properties properties = new Properties();
+            final var properties = new Properties();
             properties.load(inputStream);
-
-            final AzureDiscoveryConfig azureDiscoveryConfig =
-                    ConfigFactory.create(AzureDiscoveryConfig.class, properties);
+            final var azureDiscoveryConfig = ConfigFactory.create(AzureDiscoveryConfig.class, properties);
             if (!isValid(azureDiscoveryConfig)) {
                 logger.warn("The Configuration of the Azure Storage Cluster Discovery Extension is not valid.");
                 return null;
@@ -151,7 +132,6 @@ public class ConfigReader {
                     propertiesFile.getAbsolutePath(),
                     e.getMessage());
         }
-
         return null;
     }
 }

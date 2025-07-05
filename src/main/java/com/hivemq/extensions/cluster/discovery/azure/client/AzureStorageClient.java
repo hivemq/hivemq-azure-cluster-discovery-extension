@@ -16,9 +16,7 @@
 
 package com.hivemq.extensions.cluster.discovery.azure.client;
 
-import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
-import com.azure.storage.blob.BlobServiceClient;
 import com.azure.storage.blob.BlobServiceClientBuilder;
 import com.azure.storage.blob.models.BlobErrorCode;
 import com.azure.storage.blob.models.BlobItem;
@@ -33,7 +31,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.util.Iterator;
 
 /**
@@ -44,6 +41,7 @@ public class AzureStorageClient {
     private static final @NotNull Logger log = LoggerFactory.getLogger(AzureStorageClient.class);
 
     private final @NotNull ConfigReader configReader;
+
     private @Nullable BlobContainerClient containerClient;
     private @Nullable AzureDiscoveryConfig azureDiscoveryConfig;
 
@@ -52,8 +50,7 @@ public class AzureStorageClient {
     }
 
     public void createOrUpdate() throws IllegalStateException, IllegalArgumentException {
-
-        final AzureDiscoveryConfig newAzureDiscoveryConfig = configReader.readConfiguration();
+        final var newAzureDiscoveryConfig = configReader.readConfiguration();
         if (newAzureDiscoveryConfig == null) {
             if (azureDiscoveryConfig != null) {
                 log.warn(
@@ -66,14 +63,13 @@ public class AzureStorageClient {
             azureDiscoveryConfig = newAzureDiscoveryConfig;
         }
 
-        final String connectionString = azureDiscoveryConfig.getConnectionString();
-        final String containerName = azureDiscoveryConfig.getContainerName();
+        final var connectionString = azureDiscoveryConfig.getConnectionString();
+        final var containerName = azureDiscoveryConfig.getContainerName();
 
-        // Create a BlobServiceClient object which will be used to retrieve the blob container with the HiveMQ node entries
-        final BlobServiceClient blobServiceClient =
-                new BlobServiceClientBuilder().connectionString(connectionString).buildClient();
+        // create a BlobServiceClient object which will be used to retrieve the blob container with the HiveMQ node entries
+        final var blobServiceClient = new BlobServiceClientBuilder().connectionString(connectionString).buildClient();
 
-        // Create a client for the blob container
+        // create a client for the blob container
         containerClient = blobServiceClient.getBlobContainerClient(containerName);
     }
 
@@ -110,9 +106,8 @@ public class AzureStorageClient {
     }
 
     public void saveBlob(final @NotNull String blobName, final @NotNull String content) throws RuntimeException {
-        final BlobClient blobClient = containerClient.getBlobClient(blobName);
-        final InputStream blobData = new ByteArrayInputStream(content.getBytes());
-
+        final var blobClient = containerClient.getBlobClient(blobName);
+        final var blobData = new ByteArrayInputStream(content.getBytes());
         try {
             blobClient.upload(blobData, content.length(), true);
         } catch (final BlobStorageException blobStorageException) {
@@ -125,10 +120,9 @@ public class AzureStorageClient {
     }
 
     public void deleteBlob(final @NotNull String blobName) throws RuntimeException {
-        final BlobClient blob = containerClient.getBlobClient(blobName);
-
+        final var blobClient = containerClient.getBlobClient(blobName);
         try {
-            blob.delete();
+            blobClient.delete();
         } catch (final BlobStorageException blobStorageException) {
             throw new RuntimeException("Azure Storage Blob delete failed with status code " +
                     blobStorageException.getStatusCode() +
@@ -139,9 +133,8 @@ public class AzureStorageClient {
     }
 
     public @NotNull String getBlobContent(final @NotNull String blobName) throws RuntimeException {
-        final BlobClient blobClient = containerClient.getBlobClient(blobName);
-        final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-
+        final var blobClient = containerClient.getBlobClient(blobName);
+        final var outputStream = new ByteArrayOutputStream();
         try {
             blobClient.downloadStream(outputStream);
         } catch (final BlobStorageException blobStorageException) {
@@ -151,12 +144,10 @@ public class AzureStorageClient {
                     blobStorageException.getErrorCode() +
                     ".");
         }
-
         return outputStream.toString();
     }
 
     public @NotNull Iterator<BlobItem> getBlobs(final @NotNull String filePrefix) throws RuntimeException {
-
         try {
             return containerClient.listBlobs(new ListBlobsOptions().setPrefix(filePrefix), null).iterator();
         } catch (final BlobStorageException blobStorageException) {

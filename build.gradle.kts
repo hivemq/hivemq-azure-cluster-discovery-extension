@@ -77,12 +77,14 @@ testing {
         "test"(JvmTestSuite::class) {
             dependencies {
                 compileOnly(libs.jetbrains.annotations)
+                implementation(libs.assertj)
                 implementation(libs.mockito)
             }
         }
         "integrationTest"(JvmTestSuite::class) {
             dependencies {
                 compileOnly(libs.jetbrains.annotations)
+                implementation(libs.assertj)
                 implementation(libs.awaitility)
                 implementation(libs.testcontainers)
                 implementation(libs.testcontainers.hivemq)

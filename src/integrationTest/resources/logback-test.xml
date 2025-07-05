@@ -16,7 +16,6 @@
 
 -->
 <configuration>
-
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%-30(%d %level)- %msg%n%ex</pattern>
@@ -30,5 +29,4 @@
     <!-- silence test containers (https://www.testcontainers.org/supported_docker_environment/logging_config/) -->
     <logger name="org.testcontainers" level="INFO"/>
     <logger name="com.github.dockerjava" level="WARN"/>
-
 </configuration>

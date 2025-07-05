@@ -1,4 +1,5 @@
 [versions]
+assertj = "3.27.3"
 awaitility = "4.3.0"
 azure-storage-blob = "12.30.1"
 gradleOci-junitJupiter = "0.7.0"
@@ -11,6 +12,7 @@ owner = "1.0.12"
 testcontainers = "1.21.2"
 
 [libraries]
+assertj = { module = "org.assertj:assertj-core", version.ref = "assertj" }
 awaitility = { module = "org.awaitility:awaitility", version.ref = "awaitility" }
 azure-storage-blob = { module = "com.azure:azure-storage-blob", version.ref = "azure-storage-blob" }
 gradleOci-junitJupiter = { module = "io.github.sgtsilvio:gradle-oci-junit-jupiter", version.ref = "gradleOci-junitJupiter" }
