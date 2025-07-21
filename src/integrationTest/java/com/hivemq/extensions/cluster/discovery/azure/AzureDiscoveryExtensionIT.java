@@ -31,7 +31,6 @@ import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.MountableFile;
 
 import java.io.ByteArrayInputStream;
-import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -51,7 +50,18 @@ class AzureDiscoveryExtensionIT {
             new GenericContainer<>(OciImages.getImageName("azure-storage/azurite")) //
                     .withExposedPorts(AZURITE_PORT) //
                     .withNetwork(network) //
-                    .withNetworkAliases(AZURITE_NETWORK_ALIAS);
+                    .withNetworkAliases(AZURITE_NETWORK_ALIAS) //
+                    .withLogConsumer(outputFrame -> System.out.printf("[AZURITE] %s", outputFrame.getUtf8String())) //
+                    .withCommand("azurite",
+                            // listen on all network interfaces within the container
+                            "--blobHost",
+                            "0.0.0.0",
+                            "--queueHost",
+                            "0.0.0.0",
+                            "--tableHost",
+                            "0.0.0.0",
+                            // prevent test failure when azure-storage-blob is updated before azurite supports its new API version
+                            "--skipApiVersionCheck");
 
     @BeforeEach
     void setUp() {
@@ -65,7 +75,7 @@ class AzureDiscoveryExtensionIT {
     }
 
     @Test
-    void threeNodesFormCluster() throws TimeoutException {
+    void threeNodesFormCluster() throws Exception {
         final var consumer1 = new WaitingConsumer();
         final var consumer2 = new WaitingConsumer();
         final var consumer3 = new WaitingConsumer();
@@ -86,7 +96,7 @@ class AzureDiscoveryExtensionIT {
     }
 
     @Test
-    void twoNodesInCluster_oneNodeStarted_threeNodesInCluster() throws TimeoutException {
+    void twoNodesInCluster_oneNodeStarted_threeNodesInCluster() throws Exception {
         final var consumer1 = new WaitingConsumer();
         final var consumer2 = new WaitingConsumer();
         final var consumer3 = new WaitingConsumer();
@@ -106,7 +116,7 @@ class AzureDiscoveryExtensionIT {
     }
 
     @Test
-    void twoNodesInCluster_oneNodeCannotReachAzure_nodeFileDeleted() throws TimeoutException {
+    void twoNodesInCluster_oneNodeCannotReachAzure_nodeFileDeleted() throws Exception {
         final var toxiproxy = new ToxiproxyContainer(OciImages.getImageName("shopify/toxiproxy")) //
                 .withNetwork(network).withNetworkAliases(TOXIPROXY_NETWORK_ALIAS);
         try (toxiproxy) {
@@ -142,7 +152,7 @@ class AzureDiscoveryExtensionIT {
     }
 
     @Test
-    void threeNodesInCluster_oneNodeStopped_twoNodesInCluster() throws TimeoutException {
+    void threeNodesInCluster_oneNodeStopped_twoNodesInCluster() throws Exception {
         final var consumer1 = new WaitingConsumer();
         final var consumer2 = new WaitingConsumer();
         final var consumer3 = new WaitingConsumer();
@@ -174,15 +184,11 @@ class AzureDiscoveryExtensionIT {
 
     @Test
     @SuppressWarnings("HttpUrlsUsage")
-    void wrongConnectionString_reloadRightConnectionString_clusterCreated() throws TimeoutException {
-        final var wrongConnectionString = "DefaultEndpointsProtocol=http;" +
+    void wrongConnectionString_reloadRightConnectionString_clusterCreated() throws Exception {
+        final var wrongConnectionString = String.format("DefaultEndpointsProtocol=http;" +
                 "AccountName=devstoreaccount1;" +
                 "AccountKey=XXX8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;" +
-                "BlobEndpoint=http://" +
-                AZURITE_NETWORK_ALIAS +
-                ":" +
-                AZURITE_PORT +
-                "/devstoreaccount1";
+                "BlobEndpoint=http://%s:%d/devstoreaccount1", AZURITE_NETWORK_ALIAS, AZURITE_PORT);
 
         final var consumer = new WaitingConsumer();
 
@@ -235,33 +241,24 @@ class AzureDiscoveryExtensionIT {
         }
     }
 
-    @SuppressWarnings("HttpUrlsUsage")
-    private @NotNull String createAzuriteConnectionString(final @NotNull String host, final int port) {
-        return "DefaultEndpointsProtocol=http;" +
-                //
-                "AccountName=devstoreaccount1;" +
-                "AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;" +
-                "BlobEndpoint=http://" +
-                host +
-                ":" +
-                port +
-                "/devstoreaccount1";
+    private @NotNull String createHostAzuriteConnectionString() {
+        return createAzuriteConnectionString("127.0.0.1", azuriteContainer.getMappedPort(AZURITE_PORT));
     }
 
     private @NotNull String createDockerAzuriteConnectionString() {
         return createAzuriteConnectionString(AZURITE_NETWORK_ALIAS, AZURITE_PORT);
     }
 
-    private @NotNull String createConfig(final @NotNull String connectionString) {
-        return "connection-string=" + connectionString + '\n' + //
-                "container-name=" + BLOB_CONTAINER_NAME + '\n' + //
-                "file-prefix=hivemq-node-\n" + //
-                "file-expiration=15\n" + //
-                "update-interval=5";
+    @SuppressWarnings("HttpUrlsUsage")
+    private @NotNull String createAzuriteConnectionString(final @NotNull String host, final int port) {
+        return String.format("DefaultEndpointsProtocol=http;" +
+                "AccountName=devstoreaccount1;" +
+                "AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;" +
+                "BlobEndpoint=http://%s:%s/devstoreaccount1", host, port);
     }
 
-    private @NotNull String createHostAzuriteConnectionString() {
-        return createAzuriteConnectionString("127.0.0.1", azuriteContainer.getMappedPort(AZURITE_PORT));
+    private @NotNull HiveMQContainer createHiveMQNode() {
+        return createHiveMQNode(createDockerAzuriteConnectionString());
     }
 
     private @NotNull HiveMQContainer createHiveMQNode(final @NotNull String connectionString) {
@@ -273,7 +270,10 @@ class AzureDiscoveryExtensionIT {
                 .withNetwork(network);
     }
 
-    private @NotNull HiveMQContainer createHiveMQNode() {
-        return createHiveMQNode(createDockerAzuriteConnectionString());
+    private @NotNull String createConfig(final @NotNull String connectionString) {
+        return String.format(
+                "connection-string=%s\ncontainer-name=%s\nfile-prefix=hivemq-node-\nfile-expiration=15\nupdate-interval=5",
+                connectionString,
+                BLOB_CONTAINER_NAME);
     }
 }
