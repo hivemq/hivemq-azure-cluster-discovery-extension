@@ -1,5 +1,5 @@
 [versions]
-assertj = "3.27.5"
+assertj = "3.27.6"
 awaitility = "4.3.0"
 azure-storage-blob = "12.31.2"
 gradleOci-junitJupiter = "0.7.0"
