@@ -17,6 +17,8 @@
 package com.hivemq.extensions.cluster.discovery.azure;
 
 import com.azure.storage.blob.BlobContainerClientBuilder;
+import eu.rekawek.toxiproxy.ToxiproxyClient;
+import eu.rekawek.toxiproxy.model.ToxicDirection;
 import io.github.sgtsilvio.gradle.oci.junit.jupiter.OciImages;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterEach;
@@ -24,10 +26,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
-import org.testcontainers.containers.ToxiproxyContainer;
 import org.testcontainers.containers.output.WaitingConsumer;
 import org.testcontainers.hivemq.HiveMQContainer;
 import org.testcontainers.images.builder.Transferable;
+import org.testcontainers.toxiproxy.ToxiproxyContainer;
 import org.testcontainers.utility.MountableFile;
 
 import java.io.ByteArrayInputStream;
@@ -122,9 +124,10 @@ class AzureDiscoveryExtensionIT {
         try (toxiproxy) {
             toxiproxy.start();
 
-            final var proxy = toxiproxy.getProxy(azuriteContainer, AZURITE_PORT);
-            final var toxiproxyConnectionString =
-                    createAzuriteConnectionString(TOXIPROXY_NETWORK_ALIAS, proxy.getOriginalProxyPort());
+            final var toxiproxyClient = new ToxiproxyClient(toxiproxy.getHost(), toxiproxy.getControlPort());
+            final var proxy =
+                    toxiproxyClient.createProxy("proxy", "0.0.0.0:8666", AZURITE_NETWORK_ALIAS + ":" + AZURITE_PORT);
+            final var toxiproxyConnectionString = createAzuriteConnectionString(TOXIPROXY_NETWORK_ALIAS, 8666);
 
             final var toxicConsumer = new WaitingConsumer();
             final var normalConsumer = new WaitingConsumer();
@@ -138,7 +141,8 @@ class AzureDiscoveryExtensionIT {
                 normalConsumer.waitUntil(frame -> frame.getUtf8String().contains("Cluster size = 2"), 30, SECONDS);
 
                 // toxicNode now cannot update its node file
-                proxy.setConnectionCut(true);
+                proxy.toxics().timeout("timeout-down", ToxicDirection.DOWNSTREAM, 0);
+                proxy.toxics().timeout("timeout-up", ToxicDirection.UPSTREAM, 0);
 
                 final var blobContainerClient =
                         new BlobContainerClientBuilder().connectionString(createHostAzuriteConnectionString())
@@ -185,6 +189,7 @@ class AzureDiscoveryExtensionIT {
     @Test
     @SuppressWarnings("HttpUrlsUsage")
     void wrongConnectionString_reloadRightConnectionString_clusterCreated() throws Exception {
+        //noinspection SpellCheckingInspection
         final var wrongConnectionString = String.format("DefaultEndpointsProtocol=http;" +
                 "AccountName=devstoreaccount1;" +
                 "AccountKey=XXX8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;" +
@@ -267,6 +272,7 @@ class AzureDiscoveryExtensionIT {
                 .withHiveMQConfig(MountableFile.forClasspathResource("config.xml"))
                 .withCopyToContainer(Transferable.of(createConfig(connectionString)),
                         "/opt/hivemq/extensions/hivemq-azure-cluster-discovery-extension/azDiscovery.properties")
+                .withEnv("HIVEMQ_DISABLE_STATISTICS", "true")
                 .withNetwork(network);
     }
 
