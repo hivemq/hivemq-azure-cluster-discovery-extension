@@ -42,6 +42,13 @@
         "description": "The HiveMQ Version"
       }
     },
+    "azureDiscoveryExtensionVersion": {
+      "type": "string",
+      "defaultValue": "1.2.5",
+      "metadata": {
+        "description": "The Azure Cluster Discovery Extension Version"
+      }
+    },
     "numberOfInstances": {
       "type": "int",
       "defaultValue": 2,
@@ -64,7 +71,7 @@
     "virtualNetworkName": "hivemq-cluster-vnet",
     "backendPoolName": "hivemq-node",
     "frontendName": "LoadBalancerFrontEnd",
-    "healthProbeHivemq": "hivmeq-node-health",
+    "healthProbeHivemq": "hivemq-node-health",
     "healthProbeControlCenter": "hivemq-control-center-health",
     "loadBalancerPublicIpName": "[concat(variables('loadBalancersName'), 'public-ip')]",
     "linuxConfiguration": {
@@ -263,7 +270,7 @@
               ]
             },
             "protectedSettings": {
-              "commandToExecute": "[format('sh hivemq_node_setup.sh {0} {1} {2}', parameters('hivemqVersion'), concat('\"' ,'DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value,';EndpointSuffix=core.windows.net', '\"'), variables('containerName'))]"
+              "commandToExecute": "[format('sh hivemq_node_setup.sh {0} {1} {2} {3}', parameters('hivemqVersion'), concat('\"' ,'DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value,';EndpointSuffix=core.windows.net', '\"'), variables('containerName'), parameters('azureDiscoveryExtensionVersion'))]"
             }
           }
         }
