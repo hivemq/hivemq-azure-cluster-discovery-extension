@@ -33,7 +33,6 @@ import org.testcontainers.toxiproxy.ToxiproxyContainer;
 import org.testcontainers.utility.MountableFile;
 
 import java.io.ByteArrayInputStream;
-import java.util.stream.Collectors;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -181,7 +180,7 @@ class AzureDiscoveryExtensionIT {
                             .containerName(BLOB_CONTAINER_NAME)
                             .buildClient();
             // blob did not yet expire
-            final var blobs = blobContainerClient.listBlobs().stream().collect(Collectors.toList());
+            final var blobs = blobContainerClient.listBlobs().stream().toList();
             assertThat(blobs.size()).isEqualTo(3);
         }
     }
@@ -241,7 +240,7 @@ class AzureDiscoveryExtensionIT {
         try (node) {
             node.start();
 
-            final var blobs = blobContainerClient.listBlobs().stream().collect(Collectors.toList());
+            final var blobs = blobContainerClient.listBlobs().stream().toList();
             assertThat(blobs.size()).isEqualTo(2);
         }
     }
@@ -277,9 +276,12 @@ class AzureDiscoveryExtensionIT {
     }
 
     private @NotNull String createConfig(final @NotNull String connectionString) {
-        return String.format(
-                "connection-string=%s\ncontainer-name=%s\nfile-prefix=hivemq-node-\nfile-expiration=15\nupdate-interval=5",
-                connectionString,
-                BLOB_CONTAINER_NAME);
+        return """
+                connection-string=%s
+                container-name=%s
+                file-prefix=hivemq-node-
+                file-expiration=15
+                update-interval=5
+                """.formatted(connectionString, BLOB_CONTAINER_NAME);
     }
 }
