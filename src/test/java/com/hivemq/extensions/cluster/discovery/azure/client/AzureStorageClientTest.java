@@ -58,12 +58,13 @@ class AzureStorageClientTest {
         when(extensionInformation.getExtensionHomeFolder()).thenReturn(temporaryFolder.toFile());
 
         try (final var printWriter = new PrintWriter(temporaryFolder.resolve(ConfigReader.STORAGE_FILE).toFile())) {
-            printWriter.println(
-                    "connection-string:DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;QueueEndpoint=http://127.0.0.1:10001/devstoreaccount1;");
-            printWriter.println("container-name:hivemq-blob-container");
-            printWriter.println("file-prefix:hivemq-cluster");
-            printWriter.println("file-expiration:360");
-            printWriter.println("update-interval:180");
+            printWriter.print("""
+                    connection-string:DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;QueueEndpoint=http://127.0.0.1:10001/devstoreaccount1;
+                    container-name:hivemq-blob-container
+                    file-prefix:hivemq-cluster
+                    file-expiration:360
+                    update-interval:180
+                    """);
         }
 
         final var configurationReader = new ConfigReader(extensionInformation);
