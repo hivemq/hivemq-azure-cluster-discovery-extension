@@ -29,9 +29,8 @@ import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.PrintWriter;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -48,24 +47,26 @@ class AzureStorageClientTest {
 
     private @NotNull ExtensionInformation extensionInformation;
     private @NotNull AzureStorageClient azStorageClient;
+    private @NotNull Path configPath;
 
     @TempDir
-    @NotNull Path temporaryFolder;
+    private @NotNull Path tempDir;
 
     @BeforeEach
     void setUp() throws IOException {
         extensionInformation = mock(ExtensionInformation.class);
-        when(extensionInformation.getExtensionHomeFolder()).thenReturn(temporaryFolder.toFile());
+        when(extensionInformation.getExtensionHomeFolder()).thenReturn(tempDir.toFile());
 
-        try (final var printWriter = new PrintWriter(temporaryFolder.resolve(ConfigReader.STORAGE_FILE).toFile())) {
-            printWriter.print("""
-                    connection-string:DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;QueueEndpoint=http://127.0.0.1:10001/devstoreaccount1;
-                    container-name:hivemq-blob-container
-                    file-prefix:hivemq-cluster
-                    file-expiration:360
-                    update-interval:180
-                    """);
-        }
+        configPath = tempDir.resolve(ConfigReader.CONFIG_PATH);
+        Files.createDirectories(configPath.getParent());
+
+        Files.writeString(configPath, """
+                connection-string:DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;QueueEndpoint=http://127.0.0.1:10001/devstoreaccount1;
+                container-name:hivemq-blob-container
+                file-prefix:hivemq-cluster
+                file-expiration:360
+                update-interval:180
+                """);
 
         final var configurationReader = new ConfigReader(extensionInformation);
         azStorageClient = new AzureStorageClient(configurationReader);
@@ -99,8 +100,10 @@ class AzureStorageClientTest {
     }
 
     @Test
-    void test_create_no_config_file() {
-        deleteFilesInTemporaryFolder();
+    void test_create_no_config_file() throws IOException {
+        Files.deleteIfExists(configPath);
+        Files.deleteIfExists(configPath.getParent());
+
         final ConfigReader configurationReader = new ConfigReader(extensionInformation);
         azStorageClient = new AzureStorageClient(configurationReader);
 
@@ -109,19 +112,12 @@ class AzureStorageClientTest {
 
     @Test
     void test_create_invalid_config() throws IOException {
-        deleteFilesInTemporaryFolder();
-        try (final var printWriter = new PrintWriter(temporaryFolder.resolve(ConfigReader.STORAGE_FILE).toFile())) {
-            printWriter.println("");
-        }
+        Files.writeString(configPath, "");
+
         final var configurationReader = new ConfigReader(extensionInformation);
         azStorageClient = new AzureStorageClient(configurationReader);
-        assertThatThrownBy(() -> azStorageClient.createOrUpdate()).isInstanceOf(IllegalStateException.class);
-    }
 
-    private void deleteFilesInTemporaryFolder() {
-        for (final var file : Objects.requireNonNull(temporaryFolder.toFile().listFiles())) {
-            assertThat(file.delete()).isTrue();
-        }
+        assertThatThrownBy(() -> azStorageClient.createOrUpdate()).isInstanceOf(IllegalStateException.class);
     }
 
     @Test

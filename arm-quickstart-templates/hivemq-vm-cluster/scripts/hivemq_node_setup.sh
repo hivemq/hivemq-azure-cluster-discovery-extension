@@ -5,7 +5,7 @@ EXTENSION_VERSION=$4
 
 HIVEMQ_DOWNLOAD_LINK="https://www.hivemq.com/releases/hivemq-${HIVEMQ_VERSION}.zip"
 EXTENSION_DOWNLOAD_LINK="https://github.com/hivemq/hivemq-azure-cluster-discovery-extension/releases/download/$EXTENSION_VERSION/hivemq-azure-cluster-discovery-extension-$EXTENSION_VERSION.zip"
-EXTENSION_PROPERTIES_PATH="/opt/hivemq/extensions/hivemq-azure-cluster-discovery-extension/azDiscovery.properties"
+EXTENSION_PROPERTIES_PATH="/opt/hivemq/extensions/hivemq-azure-cluster-discovery-extension/conf/config.properties"
 
 sudo apt-get update -y
 sudo apt-get install -y openjdk-21-jdk

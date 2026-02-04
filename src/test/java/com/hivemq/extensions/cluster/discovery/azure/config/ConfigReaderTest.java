@@ -22,8 +22,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -32,11 +33,17 @@ import static org.mockito.Mockito.when;
 class ConfigReaderTest {
 
     private @NotNull ExtensionInformation extensionInformation;
+    private @NotNull Path configPath;
+
+    @TempDir
+    private @NotNull Path tempDir;
 
     @BeforeEach
-    void setUp(final @TempDir @NotNull File tempDir) {
+    void setUp() throws IOException {
         extensionInformation = mock(ExtensionInformation.class);
-        when(extensionInformation.getExtensionHomeFolder()).thenReturn(tempDir);
+        when(extensionInformation.getExtensionHomeFolder()).thenReturn(tempDir.toFile());
+        configPath = tempDir.resolve(ConfigReader.CONFIG_PATH);
+        Files.createDirectories(configPath.getParent());
     }
 
     @Test
@@ -47,7 +54,7 @@ class ConfigReaderTest {
 
     @Test
     void test_readConfiguration_successful() throws Exception {
-        Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(ConfigReader.STORAGE_FILE), """
+        Files.writeString(configPath, """
                 connection-string:https://my-connection-string
                 container-name:hivemq-blob-container
                 file-prefix:hivemq-cluster
@@ -60,7 +67,7 @@ class ConfigReaderTest {
 
     @Test
     void test_readConfiguration_missing_connection_string() throws Exception {
-        Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(ConfigReader.STORAGE_FILE), """
+        Files.writeString(configPath, """
                 connection-string:
                 container-name:hivemq-blob-container
                 file-prefix:hivemq-cluster
@@ -73,7 +80,7 @@ class ConfigReaderTest {
 
     @Test
     void test_readConfiguration_missing_container_name() throws Exception {
-        Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(ConfigReader.STORAGE_FILE), """
+        Files.writeString(configPath, """
                 connection-string:https://my-connection-string
                 container-name:
                 file-prefix:hivemq-cluster
@@ -87,7 +94,7 @@ class ConfigReaderTest {
 
     @Test
     void test_readConfiguration_both_intervals_zero_successful() throws Exception {
-        Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(ConfigReader.STORAGE_FILE), """
+        Files.writeString(configPath, """
                 connection-string:https://my-connection-string
                 container-name:hivemq-blob-container
                 file-prefix:hivemq-cluster
@@ -101,7 +108,7 @@ class ConfigReaderTest {
 
     @Test
     void test_readConfiguration_both_intervals_same_value() throws Exception {
-        Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(ConfigReader.STORAGE_FILE), """
+        Files.writeString(configPath, """
                 connection-string:https://my-connection-string
                 container-name:hivemq-blob-container
                 file-prefix:hivemq-cluster
@@ -115,7 +122,7 @@ class ConfigReaderTest {
 
     @Test
     void test_readConfiguration_update_interval_larger() throws Exception {
-        Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(ConfigReader.STORAGE_FILE), """
+        Files.writeString(configPath, """
                 connection-string:https://my-connection-string
                 container-name:hivemq-blob-container
                 file-prefix:hivemq-cluster
@@ -129,7 +136,7 @@ class ConfigReaderTest {
 
     @Test
     void test_readConfiguration_update_deactivated() throws Exception {
-        Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(ConfigReader.STORAGE_FILE), """
+        Files.writeString(configPath, """
                 connection-string:https://my-connection-string
                 container-name:hivemq-blob-container
                 file-prefix:hivemq-cluster
@@ -143,7 +150,7 @@ class ConfigReaderTest {
 
     @Test
     void test_readConfiguration_expiration_deactivated() throws Exception {
-        Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(ConfigReader.STORAGE_FILE), """
+        Files.writeString(configPath, """
                 connection-string:https://my-connection-string
                 container-name:hivemq-blob-container
                 file-prefix:hivemq-cluster
@@ -157,7 +164,7 @@ class ConfigReaderTest {
 
     @Test
     void test_readConfiguration_missing_expiration() throws Exception {
-        Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(ConfigReader.STORAGE_FILE), """
+        Files.writeString(configPath, """
                 connection-string:https://my-connection-string
                 container-name:hivemq-blob-container
                 file-prefix:hivemq-cluster
@@ -171,7 +178,7 @@ class ConfigReaderTest {
 
     @Test
     void test_readConfiguration_missing_update() throws Exception {
-        Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(ConfigReader.STORAGE_FILE), """
+        Files.writeString(configPath, """
                 connection-string:https://my-connection-string
                 container-name:hivemq-blob-container
                 file-prefix:hivemq-cluster
@@ -181,5 +188,23 @@ class ConfigReaderTest {
 
         final var configurationReader = new ConfigReader(extensionInformation);
         assertThat(configurationReader.readConfiguration()).isNull();
+    }
+
+    @Test
+    void test_readConfiguration_legacyLocation_successful() throws Exception {
+        // remove config from conf/ folder
+        Files.deleteIfExists(configPath);
+        Files.deleteIfExists(configPath.getParent());
+
+        // write config at legacy location (root folder)
+        Files.writeString(tempDir.resolve(ConfigReader.LEGACY_CONFIG_PATH), """
+                connection-string:https://my-connection-string
+                container-name:hivemq-blob-container
+                file-prefix:hivemq-cluster
+                file-expiration:360
+                update-interval:180""");
+
+        final var configurationReader = new ConfigReader(extensionInformation);
+        assertThat(configurationReader.readConfiguration()).isNotNull();
     }
 }

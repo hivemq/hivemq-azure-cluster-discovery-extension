@@ -31,14 +31,18 @@ import java.util.Properties;
 
 public class ConfigReader {
 
-    public static final @NotNull String STORAGE_FILE = "azDiscovery.properties";
+    public static final @NotNull String CONFIG_PATH = "conf/config.properties";
+    public static final @NotNull String LEGACY_CONFIG_PATH = "azDiscovery.properties";
 
     private static final @NotNull Logger logger = LoggerFactory.getLogger(ConfigReader.class);
 
-    private final @NotNull File extensionHomeFolder;
+    private final @NotNull ConfigResolver configResolver;
 
     public ConfigReader(final @NotNull ExtensionInformation extensionInformation) {
-        extensionHomeFolder = extensionInformation.getExtensionHomeFolder();
+        configResolver = new ConfigResolver(extensionInformation.getExtensionHomeFolder().toPath(),
+                "Azure Cluster Discovery Extension",
+                CONFIG_PATH,
+                LEGACY_CONFIG_PATH);
     }
 
     private static boolean isValid(final @NotNull AzureDiscoveryConfig azureDiscoveryConfig) {
@@ -100,11 +104,11 @@ public class ConfigReader {
     }
 
     public @Nullable AzureDiscoveryConfig readConfiguration() {
-        final var propertiesFile = new File(extensionHomeFolder, STORAGE_FILE);
+        final var propertiesFile = configResolver.get().toFile();
         if (!propertiesFile.exists()) {
             logger.warn("Could not find '{}'. Please verify that the properties file is located under '{}'.",
-                    STORAGE_FILE,
-                    extensionHomeFolder);
+                    propertiesFile.getName(),
+                    propertiesFile.getParentFile());
             return null;
         }
         if (!propertiesFile.canRead()) {
