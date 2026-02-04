@@ -23,7 +23,7 @@ Additionally, every broker updates its own file on a regular basis to prevent th
   the [HiveMQ Website](https://www.hivemq.com/releases/extensions/hivemq-azure-cluster-discovery-extension-1.1.0.zip) or
   from the [GitHub Releases Page](https://github.com/hivemq/hivemq-azure-cluster-discovery-extension/releases/latest).
 * Copy the content of the zip file to the `extensions` folder of your HiveMQ nodes.
-* Modify the `azDiscovery.properties` file for your needs.
+* Modify the `conf/config.properties` file for your needs.
 * Change the [Discovery Mechanism](https://www.hivemq.com/docs/latest/hivemq/cluster.html#discovery) of HiveMQ
   to `extension`.
 
@@ -34,7 +34,7 @@ The ip-address and port are taken from the `external-address` and `external-port
 cluster `transport` (config.xml).
 If they are not set, the `bind-address` and `bind-port` will be used.
 
-The `azDiscovery.properties` can be reloaded during runtime.
+The `conf/config.properties` can be reloaded during runtime.
 
 ### General Configuration
 
@@ -60,7 +60,7 @@ update-interval=60
 
 * Create an Azure Storage Account.
 * Get your Connection String for the Storage Account.
-* Place the Connection String into the `azDiscovery.properties` file of your HiveMQ nodes.
+* Place the Connection String into the `conf/config.properties` file of your HiveMQ nodes.
 * Start your HiveMQ nodes and verify the discovery.
 
 ## Need Help?

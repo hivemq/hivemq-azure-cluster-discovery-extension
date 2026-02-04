@@ -203,7 +203,7 @@ class AzureDiscoveryExtensionIT {
             normalNode.start();
 
             reloadingNode.copyFileToContainer(Transferable.of(createConfig(createDockerAzuriteConnectionString()).getBytes()),
-                    "/opt/hivemq/extensions/hivemq-azure-cluster-discovery-extension/azDiscovery.properties");
+                    "/opt/hivemq/extensions/hivemq-azure-cluster-discovery-extension/conf/config.properties");
 
             consumer.waitUntil(frame -> frame.getUtf8String().contains("Cluster size = 2"), 90, SECONDS);
         }
@@ -245,6 +245,20 @@ class AzureDiscoveryExtensionIT {
         }
     }
 
+    @Test
+    void configAtLegacyLocation_nodeStartsSuccessfully() throws Exception {
+        final var consumer = new WaitingConsumer();
+
+        final var node = createHiveMQNodeWithLegacyConfig().withLogConsumer(consumer);
+        try (node) {
+            node.start();
+            // Wait for HiveMQ to fully start and the extension to initialize with the legacy config
+            consumer.waitUntil(frame -> frame.getUtf8String().contains("Started HiveMQ"), 30, SECONDS);
+            // Verify the legacy config warning is logged (proves the legacy config was used)
+            consumer.waitUntil(frame -> frame.getUtf8String().contains("is placed at the legacy location"), 5, SECONDS);
+        }
+    }
+
     private @NotNull String createHostAzuriteConnectionString() {
         return createAzuriteConnectionString("127.0.0.1", azuriteContainer.getMappedPort(AZURITE_PORT));
     }
@@ -270,6 +284,16 @@ class AzureDiscoveryExtensionIT {
                 .asCompatibleSubstituteFor("hivemq/hivemq4")) //
                 .withHiveMQConfig(MountableFile.forClasspathResource("config.xml"))
                 .withCopyToContainer(Transferable.of(createConfig(connectionString)),
+                        "/opt/hivemq/extensions/hivemq-azure-cluster-discovery-extension/conf/config.properties")
+                .withEnv("HIVEMQ_DISABLE_STATISTICS", "true")
+                .withNetwork(network);
+    }
+
+    private @NotNull HiveMQContainer createHiveMQNodeWithLegacyConfig() {
+        return new HiveMQContainer(OciImages.getImageName("hivemq/extensions/hivemq-azure-cluster-discovery-extension")
+                .asCompatibleSubstituteFor("hivemq/hivemq4")) //
+                .withHiveMQConfig(MountableFile.forClasspathResource("config.xml"))
+                .withCopyToContainer(Transferable.of(createConfig(createDockerAzuriteConnectionString())),
                         "/opt/hivemq/extensions/hivemq-azure-cluster-discovery-extension/azDiscovery.properties")
                 .withEnv("HIVEMQ_DISABLE_STATISTICS", "true")
                 .withNetwork(network);
