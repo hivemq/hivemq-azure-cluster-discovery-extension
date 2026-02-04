@@ -5,7 +5,21 @@ EXTENSION_VERSION=$4
 
 HIVEMQ_DOWNLOAD_LINK="https://www.hivemq.com/releases/hivemq-${HIVEMQ_VERSION}.zip"
 EXTENSION_DOWNLOAD_LINK="https://github.com/hivemq/hivemq-azure-cluster-discovery-extension/releases/download/$EXTENSION_VERSION/hivemq-azure-cluster-discovery-extension-$EXTENSION_VERSION.zip"
-EXTENSION_PROPERTIES_PATH="/opt/hivemq/extensions/hivemq-azure-cluster-discovery-extension/conf/config.properties"
+
+# Determine config path based on extension version
+# Version 1.2.8+ uses new path: conf/config.properties
+# Version 1.2.7 and earlier uses legacy path: azDiscovery.properties
+version_gte() {
+    [ "$(printf '%s\n' "$1" "$2" | sort -V | tail -n1)" = "$1" ]
+}
+
+if version_gte "$EXTENSION_VERSION" "1.2.8"; then
+    # New path for versions >= 1.2.8
+    EXTENSION_PROPERTIES_PATH="/opt/hivemq/extensions/hivemq-azure-cluster-discovery-extension/conf/config.properties"
+else
+    # Legacy path for versions < 1.2.8
+    EXTENSION_PROPERTIES_PATH="/opt/hivemq/extensions/hivemq-azure-cluster-discovery-extension/azDiscovery.properties"
+fi
 
 sudo apt-get update -y
 sudo apt-get install -y openjdk-21-jdk
