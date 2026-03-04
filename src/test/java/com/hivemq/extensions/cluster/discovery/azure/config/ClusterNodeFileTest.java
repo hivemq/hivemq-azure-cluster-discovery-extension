@@ -46,20 +46,20 @@ public class ClusterNodeFileTest {
 
     @Test
     void whenNodeIdIsNull_thenThrowNPE() {
-        //noinspection DataFlowIssue
-        assertThatThrownBy(() -> new ClusterNodeFile(null,
-                clusterNodeAddress)).isInstanceOf(NullPointerException.class);
+        // noinspection DataFlowIssue
+        assertThatThrownBy(() -> new ClusterNodeFile(null, clusterNodeAddress))
+                .isInstanceOf(NullPointerException.class);
     }
 
     @Test
     void whenNodeIdIsBlank_thenThrowIllegalArgument() {
-        assertThatThrownBy(() -> new ClusterNodeFile(" ",
-                clusterNodeAddress)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new ClusterNodeFile(" ", clusterNodeAddress))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void whenClusterNodeAddressIsNull_thenThrowNPE() {
-        //noinspection DataFlowIssue
+        // noinspection DataFlowIssue
         assertThatThrownBy(() -> new ClusterNodeFile(nodeId, null)).isInstanceOf(NullPointerException.class);
     }
 
@@ -181,9 +181,7 @@ public class ClusterNodeFileTest {
     @Test
     void parseClusterNodeFile_tooShort() {
         final var clusterNodeFileString = encodeClusterNodeFileString(ClusterNodeFile.CONTENT_VERSION +
-                ClusterNodeFile.CONTENT_SEPARATOR +
-                System.currentTimeMillis() +
-                ClusterNodeFile.CONTENT_SEPARATOR);
+                ClusterNodeFile.CONTENT_SEPARATOR + System.currentTimeMillis() + ClusterNodeFile.CONTENT_SEPARATOR);
 
         final var clusterNodeFile = ClusterNodeFile.parseClusterNodeFile(clusterNodeFileString);
         assertThat(clusterNodeFile).isNull();
@@ -192,15 +190,9 @@ public class ClusterNodeFileTest {
     @Test
     void parseClusterNodeFile_tooLong() {
         final var clusterNodeFileString = encodeClusterNodeFileString(ClusterNodeFile.CONTENT_VERSION +
-                ClusterNodeFile.CONTENT_SEPARATOR +
-                System.currentTimeMillis() +
-                ClusterNodeFile.CONTENT_SEPARATOR +
-                nodeId +
-                ClusterNodeFile.CONTENT_SEPARATOR +
-                clusterNodeAddress.getHost() +
-                ClusterNodeFile.CONTENT_SEPARATOR +
-                clusterNodeAddress.getPort() +
-                ClusterNodeFile.CONTENT_SEPARATOR +
+                ClusterNodeFile.CONTENT_SEPARATOR + System.currentTimeMillis() + ClusterNodeFile.CONTENT_SEPARATOR +
+                nodeId + ClusterNodeFile.CONTENT_SEPARATOR + clusterNodeAddress.getHost() +
+                ClusterNodeFile.CONTENT_SEPARATOR + clusterNodeAddress.getPort() + ClusterNodeFile.CONTENT_SEPARATOR +
                 clusterNodeAddress.getPort());
 
         final var clusterNodeFile = ClusterNodeFile.parseClusterNodeFile(clusterNodeFileString);
@@ -209,13 +201,14 @@ public class ClusterNodeFileTest {
 
     @Test
     void parseClusterNodeFile_null() {
-        //noinspection DataFlowIssue
+        // noinspection DataFlowIssue
         assertThatThrownBy(() -> ClusterNodeFile.parseClusterNodeFile(null)).isInstanceOf(NullPointerException.class);
     }
 
     @Test
     void parseClusterNodeFile_blank() {
-        assertThatThrownBy(() -> ClusterNodeFile.parseClusterNodeFile("  ")).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> ClusterNodeFile.parseClusterNodeFile("  "))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     public static @NotNull String createClusterNodeFileString(
@@ -224,15 +217,9 @@ public class ClusterNodeFileTest {
             final @NotNull String nodeId,
             final @NotNull String host,
             final @NotNull String port) {
-        final var content = version +
-                ClusterNodeFile.CONTENT_SEPARATOR +
-                timeInMillis +
-                ClusterNodeFile.CONTENT_SEPARATOR +
-                nodeId +
-                ClusterNodeFile.CONTENT_SEPARATOR +
-                host +
-                ClusterNodeFile.CONTENT_SEPARATOR +
-                port;
+        final var content =
+                version + ClusterNodeFile.CONTENT_SEPARATOR + timeInMillis + ClusterNodeFile.CONTENT_SEPARATOR +
+                        nodeId + ClusterNodeFile.CONTENT_SEPARATOR + host + ClusterNodeFile.CONTENT_SEPARATOR + port;
         return encodeClusterNodeFileString(content);
     }
 
