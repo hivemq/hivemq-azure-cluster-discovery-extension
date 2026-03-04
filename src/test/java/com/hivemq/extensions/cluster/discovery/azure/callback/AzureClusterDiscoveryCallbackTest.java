@@ -96,11 +96,8 @@ class AzureClusterDiscoveryCallbackTest {
     @Test
     void test_init_success() {
         when(azStorageClient.getBlobs(any())).thenReturn(createBlobItemIterator());
-        when(azStorageClient.getBlobContent(any())).thenReturn(ClusterNodeFileTest.createClusterNodeFileString("3",
-                "3",
-                "3",
-                "3",
-                "3"));
+        when(azStorageClient.getBlobContent(any()))
+                .thenReturn(ClusterNodeFileTest.createClusterNodeFileString("3", "3", "3", "3", "3"));
 
         azureClusterDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
@@ -173,11 +170,8 @@ class AzureClusterDiscoveryCallbackTest {
         when(azStorageClient.getStorageConfig()).thenReturn(azureDiscoveryConfig);
 
         when(azStorageClient.getBlobs(any())).thenReturn(createBlobItemIterator());
-        when(azStorageClient.getBlobContent(any())).thenReturn(ClusterNodeFileTest.createClusterNodeFileString("3",
-                "3",
-                "3",
-                "3",
-                "3"));
+        when(azStorageClient.getBlobContent(any()))
+                .thenReturn(ClusterNodeFileTest.createClusterNodeFileString("3", "3", "3", "3", "3"));
 
         // wait for files to expire
         TimeUnit.SECONDS.sleep(2);
@@ -219,11 +213,8 @@ class AzureClusterDiscoveryCallbackTest {
     @Test
     void test_init_provide_current_nodes_parse_failed() {
         when(azStorageClient.getBlobs(any())).thenReturn(createBlobItemIterator());
-        when(azStorageClient.getBlobContent(any())).thenReturn(ClusterNodeFileTest.createClusterNodeFileString("3",
-                "3",
-                "3",
-                "3",
-                "3"));
+        when(azStorageClient.getBlobContent(any()))
+                .thenReturn(ClusterNodeFileTest.createClusterNodeFileString("3", "3", "3", "3", "3"));
 
         azureClusterDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
@@ -443,11 +434,8 @@ class AzureClusterDiscoveryCallbackTest {
         azureClusterDiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
         azureClusterDiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
 
-        when(azStorageClient.getBlobContent(any())).thenReturn(ClusterNodeFileTest.createClusterNodeFileString("3",
-                "3",
-                "3",
-                "3",
-                "3"));
+        when(azStorageClient.getBlobContent(any()))
+                .thenReturn(ClusterNodeFileTest.createClusterNodeFileString("3", "3", "3", "3", "3"));
 
         doThrow(RuntimeException.class).when(azStorageClient).deleteBlob(any());
         azureClusterDiscoveryCallback.destroy(clusterDiscoveryInput);

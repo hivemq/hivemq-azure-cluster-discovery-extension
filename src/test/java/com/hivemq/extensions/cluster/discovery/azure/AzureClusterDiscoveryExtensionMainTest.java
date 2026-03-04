@@ -36,7 +36,8 @@ import static org.mockito.Mockito.when;
 class AzureClusterDiscoveryExtensionMainTest {
 
     @TempDir
-    @NotNull File temporaryFolder;
+    @NotNull
+    File temporaryFolder;
 
     private final @NotNull ExtensionStartInput extensionStartInput = mock();
     private final @NotNull ExtensionStartOutput extensionStartOutput = mock();

@@ -112,15 +112,8 @@ public class ClusterNodeFile {
 
     @Override
     public @NotNull String toString() {
-        final var content = CONTENT_VERSION +
-                CONTENT_SEPARATOR +
-                creationTimeInMillis +
-                CONTENT_SEPARATOR +
-                clusterId +
-                CONTENT_SEPARATOR +
-                clusterNodeAddress.getHost() +
-                CONTENT_SEPARATOR +
-                clusterNodeAddress.getPort();
+        final var content = CONTENT_VERSION + CONTENT_SEPARATOR + creationTimeInMillis + CONTENT_SEPARATOR + clusterId +
+                CONTENT_SEPARATOR + clusterNodeAddress.getHost() + CONTENT_SEPARATOR + clusterNodeAddress.getPort();
         return new String(Base64.getEncoder().encode(content.getBytes(UTF_8)), UTF_8);
     }
 }

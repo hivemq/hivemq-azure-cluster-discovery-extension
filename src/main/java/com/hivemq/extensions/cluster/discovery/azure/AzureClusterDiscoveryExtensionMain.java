@@ -36,7 +36,8 @@ public class AzureClusterDiscoveryExtensionMain implements ExtensionMain {
 
     private static final @NotNull Logger log = LoggerFactory.getLogger(AzureClusterDiscoveryExtensionMain.class);
 
-    @Nullable AzureClusterDiscoveryCallback azureClusterDiscoveryCallback;
+    @Nullable
+    AzureClusterDiscoveryCallback azureClusterDiscoveryCallback;
 
     @Override
     public void extensionStart(
