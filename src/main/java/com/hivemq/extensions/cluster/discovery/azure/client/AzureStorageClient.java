@@ -66,7 +66,8 @@ public class AzureStorageClient {
         final var connectionString = azureDiscoveryConfig.getConnectionString();
         final var containerName = azureDiscoveryConfig.getContainerName();
 
-        // create a BlobServiceClient object which will be used to retrieve the blob container with the HiveMQ node entries
+        // create a BlobServiceClient object which will be used to retrieve the blob container with the HiveMQ node
+        // entries
         final var blobServiceClient = new BlobServiceClientBuilder().connectionString(connectionString).buildClient();
 
         // create a client for the blob container
@@ -78,9 +79,7 @@ public class AzureStorageClient {
             return containerClient.exists();
         } catch (final BlobStorageException blobStorageException) {
             throw new RuntimeException("Azure Storage Container existence check failed with status code " +
-                    blobStorageException.getStatusCode() +
-                    " and error code " +
-                    blobStorageException.getErrorCode() +
+                    blobStorageException.getStatusCode() + " and error code " + blobStorageException.getErrorCode() +
                     ".");
         }
     }
@@ -97,10 +96,7 @@ public class AzureStorageClient {
                         containerClient.getBlobContainerName());
             } else {
                 throw new RuntimeException("Azure Storage Container creation failed with status code " +
-                        error.getStatusCode() +
-                        " and error code " +
-                        error.getErrorCode() +
-                        ".");
+                        error.getStatusCode() + " and error code " + error.getErrorCode() + ".");
             }
         }
     }
@@ -111,11 +107,9 @@ public class AzureStorageClient {
         try {
             blobClient.upload(blobData, content.length(), true);
         } catch (final BlobStorageException blobStorageException) {
-            throw new RuntimeException("Azure Storage Blob upload failed with status code " +
-                    blobStorageException.getStatusCode() +
-                    " and error code " +
-                    blobStorageException.getErrorCode() +
-                    ".");
+            throw new RuntimeException(
+                    "Azure Storage Blob upload failed with status code " + blobStorageException.getStatusCode() +
+                            " and error code " + blobStorageException.getErrorCode() + ".");
         }
     }
 
@@ -124,11 +118,9 @@ public class AzureStorageClient {
         try {
             blobClient.delete();
         } catch (final BlobStorageException blobStorageException) {
-            throw new RuntimeException("Azure Storage Blob delete failed with status code " +
-                    blobStorageException.getStatusCode() +
-                    " and error code " +
-                    blobStorageException.getErrorCode() +
-                    ".");
+            throw new RuntimeException(
+                    "Azure Storage Blob delete failed with status code " + blobStorageException.getStatusCode() +
+                            " and error code " + blobStorageException.getErrorCode() + ".");
         }
     }
 
@@ -138,11 +130,9 @@ public class AzureStorageClient {
         try {
             blobClient.downloadStream(outputStream);
         } catch (final BlobStorageException blobStorageException) {
-            throw new RuntimeException("Azure Storage Blob download failed with status code " +
-                    blobStorageException.getStatusCode() +
-                    " and error code " +
-                    blobStorageException.getErrorCode() +
-                    ".");
+            throw new RuntimeException(
+                    "Azure Storage Blob download failed with status code " + blobStorageException.getStatusCode() +
+                            " and error code " + blobStorageException.getErrorCode() + ".");
         }
         return outputStream.toString();
     }
@@ -151,11 +141,9 @@ public class AzureStorageClient {
         try {
             return containerClient.listBlobs(new ListBlobsOptions().setPrefix(filePrefix), null).iterator();
         } catch (final BlobStorageException blobStorageException) {
-            throw new RuntimeException("Azure Storage Blobs retrieval failed with status code " +
-                    blobStorageException.getStatusCode() +
-                    " and error code " +
-                    blobStorageException.getErrorCode() +
-                    ".");
+            throw new RuntimeException(
+                    "Azure Storage Blobs retrieval failed with status code " + blobStorageException.getStatusCode() +
+                            " and error code " + blobStorageException.getErrorCode() + ".");
         }
     }
 
