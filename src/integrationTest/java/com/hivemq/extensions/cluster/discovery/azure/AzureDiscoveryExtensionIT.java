@@ -61,7 +61,8 @@ class AzureDiscoveryExtensionIT {
                             "0.0.0.0",
                             "--tableHost",
                             "0.0.0.0",
-                            // prevent test failure when azure-storage-blob is updated before azurite supports its new API version
+                            // prevent test failure when azure-storage-blob is updated before azurite supports its new API
+                            // version
                             "--skipApiVersionCheck");
 
     @BeforeEach
@@ -119,7 +120,8 @@ class AzureDiscoveryExtensionIT {
     @Test
     void twoNodesInCluster_oneNodeCannotReachAzure_nodeFileDeleted() throws Exception {
         final var toxiproxy = new ToxiproxyContainer(OciImages.getImageName("shopify/toxiproxy")) //
-                .withNetwork(network).withNetworkAliases(TOXIPROXY_NETWORK_ALIAS);
+                .withNetwork(network)
+                .withNetworkAliases(TOXIPROXY_NETWORK_ALIAS);
         try (toxiproxy) {
             toxiproxy.start();
 
@@ -188,7 +190,7 @@ class AzureDiscoveryExtensionIT {
     @Test
     @SuppressWarnings("HttpUrlsUsage")
     void wrongConnectionString_reloadRightConnectionString_clusterCreated() throws Exception {
-        //noinspection SpellCheckingInspection
+        // noinspection SpellCheckingInspection
         final var wrongConnectionString = String.format("DefaultEndpointsProtocol=http;" +
                 "AccountName=devstoreaccount1;" +
                 "AccountKey=XXX8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;" +
@@ -202,7 +204,8 @@ class AzureDiscoveryExtensionIT {
             reloadingNode.start();
             normalNode.start();
 
-            reloadingNode.copyFileToContainer(Transferable.of(createConfig(createDockerAzuriteConnectionString()).getBytes()),
+            reloadingNode.copyFileToContainer(
+                    Transferable.of(createConfig(createDockerAzuriteConnectionString()).getBytes()),
                     "/opt/hivemq/extensions/hivemq-azure-cluster-discovery-extension/conf/config.properties");
 
             consumer.waitUntil(frame -> frame.getUtf8String().contains("Cluster size = 2"), 90, SECONDS);
@@ -269,8 +272,7 @@ class AzureDiscoveryExtensionIT {
 
     @SuppressWarnings("HttpUrlsUsage")
     private @NotNull String createAzuriteConnectionString(final @NotNull String host, final int port) {
-        return String.format("DefaultEndpointsProtocol=http;" +
-                "AccountName=devstoreaccount1;" +
+        return String.format("DefaultEndpointsProtocol=http;" + "AccountName=devstoreaccount1;" +
                 "AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;" +
                 "BlobEndpoint=http://%s:%s/devstoreaccount1", host, port);
     }

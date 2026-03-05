@@ -25,21 +25,26 @@ import org.jetbrains.annotations.NotNull;
 public interface AzureDiscoveryConfig extends Config {
 
     @Key("connection-string")
-    @NotNull String getConnectionString();
+    @NotNull
+    String getConnectionString();
 
     @Key("container-name")
     @DefaultValue("hivemq-discovery")
-    @NotNull String getContainerName();
+    @NotNull
+    String getContainerName();
 
     @Key("file-prefix")
     @DefaultValue("hivemq-node")
-    @NotNull String getFilePrefix();
+    @NotNull
+    String getFilePrefix();
 
     @Key("file-expiration")
     @DefaultValue("360")
-    @NotNull Integer getFileExpirationInSeconds();
+    @NotNull
+    Integer getFileExpirationInSeconds();
 
     @Key("update-interval")
     @DefaultValue("180")
-    @NotNull Integer getFileUpdateIntervalInSeconds();
+    @NotNull
+    Integer getFileUpdateIntervalInSeconds();
 }

@@ -69,8 +69,8 @@ public class AzureClusterDiscoveryCallback implements ClusterDiscoveryCallback {
                     getRootCause(ex).getMessage());
             return;
         }
-        clusterDiscoveryOutput.setReloadInterval(azureStorageClient.getStorageConfig()
-                .getFileUpdateIntervalInSeconds());
+        clusterDiscoveryOutput
+                .setReloadInterval(azureStorageClient.getStorageConfig().getFileUpdateIntervalInSeconds());
         try {
             if (!azureStorageClient.existsContainer()) {
                 log.info("Azure Blob Storage Container {} doesn't exist. Creating it.",
@@ -95,8 +95,8 @@ public class AzureClusterDiscoveryCallback implements ClusterDiscoveryCallback {
             log.warn("Reload of the Azure Cluster Discovery Callback failed. {}", getRootCause(ex).getMessage());
             return;
         }
-        clusterDiscoveryOutput.setReloadInterval(azureStorageClient.getStorageConfig()
-                .getFileUpdateIntervalInSeconds());
+        clusterDiscoveryOutput
+                .setReloadInterval(azureStorageClient.getStorageConfig().getFileUpdateIntervalInSeconds());
         try {
             if (!azureStorageClient.existsContainer()) {
                 log.info("Azure Blob Storage Container {} doesn't exist. Creating it.",
