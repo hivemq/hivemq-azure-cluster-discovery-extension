@@ -40,6 +40,13 @@ dependencies {
     hivemqProvided(libs.logback.classic)
     implementation(libs.azure.storage.blob)
     implementation(libs.owner.java8)
+
+    implementation(platform(libs.netty.bom)) {
+        because("pin fixed netty-bom version for vulnerability described in INT-261")
+    }
+    implementation(platform(libs.jackson.bom)) {
+        because("pin fixed jackson-core version for vulnerability described in INT-261")
+    }
 }
 
 oci {
@@ -98,11 +105,11 @@ testing {
                 testTask {
                     testLogging {
                         events = setOf(
-                            TestLogEvent.STARTED,
-                            TestLogEvent.PASSED,
-                            TestLogEvent.SKIPPED,
-                            TestLogEvent.FAILED,
-                            TestLogEvent.STANDARD_ERROR,
+                                TestLogEvent.STARTED,
+                                TestLogEvent.PASSED,
+                                TestLogEvent.SKIPPED,
+                                TestLogEvent.FAILED,
+                                TestLogEvent.STANDARD_ERROR,
                         )
                         exceptionFormat = TestExceptionFormat.FULL
                         showStandardStreams = true
@@ -124,6 +131,13 @@ testing {
                 implementation(libs.gradleOci.junitJupiter)
                 implementation(libs.azure.storage.blob)
                 runtimeOnly(libs.logback.classic)
+
+                implementation(platform(libs.netty.bom)) {
+                    because("pin fixed netty-bom version for vulnerability described in INT-261")
+                }
+                implementation(platform(libs.jackson.bom)) {
+                    because("pin fixed jackson-core version for vulnerability described in INT-261")
+                }
             }
             oci.of(this) {
                 imageDependencies {
@@ -170,7 +184,7 @@ tasks.withType<AbstractArchiveTask>().configureEach {
 tasks.withType<JavaCompile>().configureEach {
     // ensure consistent compilation across different JDK versions
     options.compilerArgs.addAll(listOf(
-        // include parameter names for reflection (improves consistency)
-        "-parameters"
+            // include parameter names for reflection (improves consistency)
+            "-parameters"
     ))
 }
