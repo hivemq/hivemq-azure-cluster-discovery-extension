@@ -60,8 +60,7 @@ class AzureDiscoveryExtensionIT {
                             "0.0.0.0",
                             "--tableHost",
                             "0.0.0.0",
-                            // prevent test failure when azure-storage-blob is updated before azurite supports its new API
-                            // version
+                            // prevent test failure when azure-storage-blob is updated before azurite supports its new API version
                             "--skipApiVersionCheck");
 
     @BeforeEach
@@ -186,27 +185,73 @@ class AzureDiscoveryExtensionIT {
     }
 
     @Test
-    @SuppressWarnings("HttpUrlsUsage")
     void wrongConnectionString_reloadRightConnectionString_clusterCreated() throws Exception {
-        // noinspection SpellCheckingInspection
-        final var wrongConnectionString = String.format("DefaultEndpointsProtocol=http;" +
-                "AccountName=devstoreaccount1;" +
-                "AccountKey=XXX8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;" +
-                "BlobEndpoint=http://%s:%d/devstoreaccount1", AZURITE_NETWORK_ALIAS, AZURITE_PORT);
-
         final var consumer = new WaitingConsumer();
 
-        final var reloadingNode = createHiveMQNode(wrongConnectionString).withLogConsumer(consumer);
+        final var blobContainerClient =
+                new BlobContainerClientBuilder().connectionString(createHostAzuriteConnectionString())
+                        .containerName(BLOB_CONTAINER_NAME)
+                        .buildClient();
+
+        final var reloadingNode =
+                createHiveMQNode(createUnauthorizedAzuriteConnectionString()).withLogConsumer(consumer);
         final var normalNode = createHiveMQNode();
         try (reloadingNode; normalNode) {
             reloadingNode.start();
-            normalNode.start();
 
             reloadingNode.copyFileToContainer(
                     Transferable.of(createConfig(createDockerAzuriteConnectionString()).getBytes()),
                     "/opt/hivemq/extensions/hivemq-azure-cluster-discovery-extension/conf/config.properties");
 
+            // the reloading node must publish its node file before the second node starts, so that the second node
+            // joins the existing cluster, convergence of two separate clusters is covered by the test below
+            await().pollInterval(1, SECONDS)
+                    .atMost(60, SECONDS)
+                    .until(() -> blobContainerClient.exists() && blobContainerClient.listBlobs().stream().count() == 1);
+
+            normalNode.start();
+
             consumer.waitUntil(frame -> frame.getUtf8String().contains("Cluster size = 2"), 90, SECONDS);
+        }
+    }
+
+    @Test
+    void twoSeparateClusters_discoveryRecovered_clustersMerged() throws Exception {
+        // WaitingConsumer.waitUntil drains its buffer destructively and newest first, so the wait for the cluster
+        // formation would discard an already logged cluster size, each wait gets its own consumer
+        final var isolatedFormedConsumer = new WaitingConsumer();
+        final var normalFormedConsumer = new WaitingConsumer();
+        final var isolatedMergedConsumer = new WaitingConsumer();
+        final var normalMergedConsumer = new WaitingConsumer();
+
+        // the unusable connection string keeps the first node from publishing its node file, so the second node
+        // finds no members either and both nodes end up as the first member of their own cluster
+        final var isolatedNode = createHiveMQNode(createUnauthorizedAzuriteConnectionString()) //
+                .withLogConsumer(isolatedFormedConsumer)
+                .withLogConsumer(isolatedMergedConsumer);
+        final var normalNode = createHiveMQNode() //
+                .withLogConsumer(normalFormedConsumer)
+                .withLogConsumer(normalMergedConsumer);
+        try (isolatedNode; normalNode) {
+            isolatedNode.start();
+            normalNode.start();
+
+            isolatedFormedConsumer.waitUntil(
+                    frame -> frame.getUtf8String().contains("creating cluster as first member"),
+                    30,
+                    SECONDS);
+            normalFormedConsumer.waitUntil(frame -> frame.getUtf8String().contains("creating cluster as first member"),
+                    30,
+                    SECONDS);
+
+            isolatedNode.copyFileToContainer(
+                    Transferable.of(createConfig(createDockerAzuriteConnectionString()).getBytes()),
+                    "/opt/hivemq/extensions/hivemq-azure-cluster-discovery-extension/conf/config.properties");
+
+            // two separately formed clusters converge in about 45 seconds, a missed retry cycle adds about 48,
+            // a node joining an existing cluster is an order of magnitude faster
+            isolatedMergedConsumer.waitUntil(frame -> frame.getUtf8String().contains("Cluster size = 2"), 180, SECONDS);
+            normalMergedConsumer.waitUntil(frame -> frame.getUtf8String().contains("Cluster size = 2"), 180, SECONDS);
         }
     }
 
@@ -268,13 +313,6 @@ class AzureDiscoveryExtensionIT {
         return createAzuriteConnectionString(AZURITE_NETWORK_ALIAS, AZURITE_PORT);
     }
 
-    @SuppressWarnings("HttpUrlsUsage")
-    private @NotNull String createAzuriteConnectionString(final @NotNull String host, final int port) {
-        return String.format("DefaultEndpointsProtocol=http;" + "AccountName=devstoreaccount1;" +
-                "AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;" +
-                "BlobEndpoint=http://%s:%s/devstoreaccount1", host, port);
-    }
-
     private @NotNull HiveMQContainer createHiveMQNode() {
         return createHiveMQNode(createDockerAzuriteConnectionString());
     }
@@ -286,7 +324,8 @@ class AzureDiscoveryExtensionIT {
                 .withCopyToContainer(Transferable.of(createConfig(connectionString)),
                         "/opt/hivemq/extensions/hivemq-azure-cluster-discovery-extension/conf/config.properties")
                 .withEnv("HIVEMQ_DISABLE_STATISTICS", "true")
-                .withNetwork(network);
+                .withNetwork(network)
+                .withLogConsumer(outputFrame -> System.out.printf("[HIVEMQ] %s", outputFrame.getUtf8String()));
     }
 
     private @NotNull HiveMQContainer createHiveMQNodeWithLegacyConfig() {
@@ -296,10 +335,29 @@ class AzureDiscoveryExtensionIT {
                 .withCopyToContainer(Transferable.of(createConfig(createDockerAzuriteConnectionString())),
                         "/opt/hivemq/extensions/hivemq-azure-cluster-discovery-extension/azDiscovery.properties")
                 .withEnv("HIVEMQ_DISABLE_STATISTICS", "true")
-                .withNetwork(network);
+                .withNetwork(network)
+                .withLogConsumer(outputFrame -> System.out.printf("[HIVEMQ] %s", outputFrame.getUtf8String()));
     }
 
-    private @NotNull String createConfig(final @NotNull String connectionString) {
+    @SuppressWarnings("HttpUrlsUsage")
+    private static @NotNull String createAzuriteConnectionString(final @NotNull String host, final int port) {
+        // noinspection SpellCheckingInspection
+        return String.format("DefaultEndpointsProtocol=http;" + //
+                "AccountName=devstoreaccount1;" +
+                "AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;" +
+                "BlobEndpoint=http://%s:%s/devstoreaccount1", host, port);
+    }
+
+    @SuppressWarnings("HttpUrlsUsage")
+    private static @NotNull String createUnauthorizedAzuriteConnectionString() {
+        // noinspection SpellCheckingInspection
+        return String.format("DefaultEndpointsProtocol=http;" + //
+                "AccountName=devstoreaccount1;" +
+                "AccountKey=XXX8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;" +
+                "BlobEndpoint=http://%s:%d/devstoreaccount1", AZURITE_NETWORK_ALIAS, AZURITE_PORT);
+    }
+
+    private static @NotNull String createConfig(final @NotNull String connectionString) {
         return """
                 connection-string=%s
                 container-name=%s

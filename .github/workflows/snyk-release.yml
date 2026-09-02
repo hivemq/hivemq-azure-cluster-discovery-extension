@@ -20,7 +20,7 @@ jobs:
         with:
           distribution: temurin
           java-version: |
-            11
+            17
             25
 
       - name: Setup Snyk
