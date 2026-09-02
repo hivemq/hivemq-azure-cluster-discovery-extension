@@ -29,4 +29,7 @@
     <!-- silence test containers (https://www.testcontainers.org/supported_docker_environment/logging_config/) -->
     <logger name="org.testcontainers" level="INFO"/>
     <logger name="com.github.dockerjava" level="WARN"/>
+
+    <!-- java.net.http restricts the Content-Length header that azure-storage-blob sets, which is logged per request -->
+    <logger name="com.azure.core.http.jdk.httpclient" level="ERROR"/>
 </configuration>

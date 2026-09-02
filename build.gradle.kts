@@ -31,19 +31,30 @@ java {
 
 tasks.compileJava {
     javaCompiler = javaToolchains.compilerFor {
-        languageVersion = JavaLanguageVersion.of(11)
+        // azure-core-http-jdk-httpclient throws on Java 11 and below, 17 is the next long term support version
+        languageVersion = JavaLanguageVersion.of(17)
     }
+}
+
+configurations.configureEach {
+    // the Azure SDK selects its HTTP client via the com.azure.core.http.HttpClientProvider service loader,
+    // which picks the first implementation found, exclude Netty so the JDK HTTP client is used
+    exclude(group = "com.azure", module = "azure-core-http-netty")
 }
 
 dependencies {
     compileOnly(libs.jetbrains.annotations)
     hivemqProvided(libs.logback.classic)
-    implementation(libs.azure.storage.blob)
     implementation(libs.owner.java8)
+    implementation(libs.azure.storage.blob)
+    runtimeOnly(libs.azure.core.http.jdkHttpClient)
 
-    implementation(platform(libs.netty.bom)) {
-        because("pin fixed netty-bom version for vulnerability described in INT-261")
+    constraints {
+        implementation(libs.projectReactor.core) {
+            because("azure-core resolves reactor-core from the 2024.0.x release train, align with the current 2025.0.x train")
+        }
     }
+
     implementation(platform(libs.jackson.bom)) {
         because("pin fixed jackson-core version for vulnerability described in INT-261")
     }
@@ -149,11 +160,11 @@ testing {
                 implementation(libs.testcontainers.toxiproxy)
                 implementation(libs.gradleOci.junitJupiter)
                 implementation(libs.azure.storage.blob)
+                runtimeOnly(libs.azure.core.http.jdkHttpClient)
+                // azure-core resolves reactor-core from the 2024.0.x release train, align with the current 2025.0.x train
+                runtimeOnly(constraint(libs.projectReactor.core))
                 runtimeOnly(libs.logback.classic)
 
-                implementation(platform(libs.netty.bom)) {
-                    because("pin fixed netty-bom version for vulnerability described in INT-261")
-                }
                 implementation(platform(libs.jackson.bom)) {
                     because("pin fixed jackson-core version for vulnerability described in INT-261")
                 }
