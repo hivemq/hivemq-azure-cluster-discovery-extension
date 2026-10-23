@@ -11,7 +11,7 @@ junit-jupiter = "5.10.0"
 logback = "1.6.5"
 mockito = "5.24.0"
 owner = "1.0.12"
-projectReactor-core = "3.8.7"
+projectReactor-core = "3.8.8"
 testcontainers = "2.0.5"
 
 [libraries]
