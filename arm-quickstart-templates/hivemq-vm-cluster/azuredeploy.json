@@ -44,7 +44,7 @@
     },
     "azureDiscoveryExtensionVersion": {
       "type": "string",
-      "defaultValue": "1.4.2",
+      "defaultValue": "1.4.3",
       "metadata": {
         "description": "The Azure Cluster Discovery Extension Version"
       }
